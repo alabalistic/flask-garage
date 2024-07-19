@@ -1,0 +1,16 @@
+# Exclude the virtual environment
+.venv/
+venv/
+
+# Exclude Python cache files
+__pycache__/
+*.pyc
+
+# Exclude the instance directory (usually used for local SQLite DBs and other instance-specific files)
+instance/
+
+# Exclude Docker tar files
+*.tar
+
+Dockerfile
+compose.yml

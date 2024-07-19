@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="content-section">
+    <h2>Регистрирай посещение на автомобила: {{ car.registration_number }}</h2>
+    <form id="visit-form" method="POST" action="{{ url_for('create_visit', car_id=car.id) }}" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            <label for="description">Информация за ремонта</label>
+            {{ form.description(class="form-control") }}
+            <div class="input-group mt-2">
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-outline-secondary" id="record-button">🎤 Започни запис</button>
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn btn-primary">Запази</button>
+    </form>
+</div>
+
+<script>
+  let isRecording = false;
+  let mediaRecorder;
+  let audioChunks = [];
+
+  document.getElementById('record-button').addEventListener('click', () => {
+    if (isRecording) {
+      mediaRecorder.stop();
+      isRecording = false;
+      document.getElementById('record-button').innerText = "🎤 Започни запис";
+    } else {
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+          mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+          mediaRecorder.start();
+          isRecording = true;
+          audioChunks = [];
+          document.getElementById('record-button').innerText = "⏹️ Спри запис";
+
+          mediaRecorder.ondataavailable = event => {
+            audioChunks.push(event.data);
+          };
+
+          mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'audio.webm');
+
+            fetch('{{ url_for("speech_to_text") }}', {
+              method: 'POST',
+              body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+              if (data.transcript) {
+                document.getElementById('description').value = data.transcript;
+              } else {
+                alert('Грешка при транскрипцията: ' + data.error);
+              }
+            })
+            .catch(error => console.error('Error:', error));
+          };
+        })
+        .catch(error => {
+          console.error('Error accessing audio stream:', error);
+          alert('Error accessing audio stream. Please check your microphone permissions.');
+        });
+    }
+  });
+</script>
+{% endblock %}

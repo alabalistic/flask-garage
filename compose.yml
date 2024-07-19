@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  web:
+    image: flask-garage  # Use the pre-built image name
+    ports:
+      - "5000:5000"
+    environment:
+      FLASK_ENV: production
+    volumes:
+      - ./instance:/instance  # Mount the instance directory

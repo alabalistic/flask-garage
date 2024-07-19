@@ -1,0 +1,48 @@
+body {
+  background: #f8f9fa;
+  color: #212529;
+  font-family: 'Roboto', sans-serif; /* Add this line */
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #343a40;
+  font-family: 'Roboto', sans-serif; /* Add this line */
+}
+
+.bg-steel {
+  background-color: #4a6c82;
+}
+
+.site-header .navbar-nav .nav-link {
+  color: #ced4da;
+}
+
+.site-header .navbar-nav .nav-link:hover {
+  color: #ffffff;
+}
+
+.site-header .navbar-nav .nav-link.active {
+  font-weight: 500;
+}
+
+.content-section {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.table-responsive {
+  margin-top: 20px;
+}
+
+.table th, .table td {
+  vertical-align: middle;
+}
+
+.table .text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

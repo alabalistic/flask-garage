@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="content-section">
+    <h2>За колата: {{ car.registration_number }}</h2>
+    <ul class="list-group">
+        <li class="list-group-item"><strong>VIN Номер:</strong> {{ car.vin_number }}</li>
+        <li class="list-group-item"><strong>Информация за колата:</strong> {{ car.additional_info }}</li>
+        <li class="list-group-item"><strong>Собственик:</strong> {{ car.owner.name }} ({{ car.owner.phone_number }})</li>
+    </ul>
+    <a href="{{ url_for('create_visit', car_id=car.id) }}" class="btn btn btn-primary mt-3">Ново посещение</a>
+    <h3 class="mt-4">Посещения</h3>
+    <ul class="list-group">
+        {% for visit in visits %}
+            <li class="list-group-item">
+                <strong>Дата:</strong> {{ visit.date.strftime('%d.%m.%Y') }} <br>
+                <strong>Какво е направено:</strong> {{ visit.description }}
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
