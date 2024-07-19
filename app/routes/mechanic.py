@@ -9,7 +9,7 @@ from google.cloud import speech
 import os
 
 # Initialize the Google Cloud Speech client
-client = speech.SpeechClient.from_service_account_file("/home/yne/flask/instance/google-speech-to-text-key.json")
+client = speech.SpeechClient.from_service_account_file(os.getenv('GOOGLE_APPLICATION_CREDENTIALS'))
 
 @app.route("/create_car", methods=["POST", "GET"])
 @login_required
