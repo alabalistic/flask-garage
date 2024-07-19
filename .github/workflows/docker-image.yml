@@ -36,4 +36,4 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        tags: alabalistic/flask-garage:latest
+        tags: ${{ secrets.DOCKER_USERNAME }}/flask-garage:latest
