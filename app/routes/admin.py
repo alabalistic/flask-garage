@@ -3,6 +3,7 @@ from flask import render_template, url_for, flash, redirect, request
 from app.forms import RegistrationForm, LoginForm, CreateCarForm, AdminCreateUserForm, AdminEditUserForm, UpdateAccountForm
 from app.models import User, Car, Role
 from flask_login import login_user, current_user, logout_user, login_required
+from flask_paginate import Pagination, get_page_args
 
 @app.route("/create_user", methods=['GET', 'POST'])
 @login_required
@@ -150,32 +151,28 @@ def admin_dashboard():
         return redirect(url_for('home'))
     return render_template('admin/admin_dashboard.html')
 
-@app.route("/admin_users", methods=['GET', 'POST'])
+@app.route('/admin_users', methods=['GET'])
 @login_required
 def admin_users():
     if not current_user.is_admin():
-        flash('Достъп отказан!', 'danger')
+        flash('Access denied. Admins only!', 'danger')
         return redirect(url_for('home'))
-    
-    form = AdminCreateUserForm()
-    if form.validate_on_submit():
-        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        user = User(username=form.username.data, phone_number=form.phone_number.data, password=hashed_password)
-        db.session.add(user)
-        db.session.commit()
 
-        role = Role.query.filter_by(name=form.role.data).first()
-        if role:
-            user.roles.append(role)
-            db.session.commit()
-        
-        flash(f'User {form.username.data} регистриран успешно', 'success')
-        app.logger.info(f'{current_user.username}  updated {user.phone_number}')
+    page, per_page, offset = get_page_args(page_parameter='page', per_page_parameter='per_page', per_page=10)
+    query = request.args.get('query')
 
-        return redirect(url_for('admin_users'))
+    if query:
+        users_query = User.query.filter(User.username.contains(query) | User.phone_number.contains(query))
+    else:
+        users_query = User.query
 
-    users = User.query.filter_by(visibility=True).all()
-    return render_template('admin/admin_users.html', form=form, users=users)
+    total = users_query.count()
+    users = users_query.offset(offset).limit(per_page).all()
+
+    pagination = Pagination(page=page, per_page=per_page, total=total, css_framework='bootstrap4')
+
+    return render_template('admin/admin_users.html', users=users, pagination=pagination)
+
 
 @app.route("/logout")
 def logout():
@@ -223,12 +220,19 @@ def admin_cars():
         flash('Access denied. Admins only!', 'danger')
         return redirect(url_for('home'))
 
+    page, per_page, offset = get_page_args(page_parameter='page', per_page_parameter='per_page', per_page=10)
     visibility_filter = request.args.get('visibility')
-    if visibility_filter == 'true':
-        cars = Car.query.filter_by(visibility=True).all()
-    elif visibility_filter == 'false':
-        cars = Car.query.filter_by(visibility=False).all()
-    else:
-        cars = Car.query.all()
 
-    return render_template('admin/admin_cars.html', cars=cars)
+    if visibility_filter == 'true':
+        cars_query = Car.query.filter_by(visibility=True)
+    elif visibility_filter == 'false':
+        cars_query = Car.query.filter_by(visibility=False)
+    else:
+        cars_query = Car.query
+
+    total = cars_query.count()
+    cars = cars_query.offset(offset).limit(per_page).all()
+    
+    pagination = Pagination(page=page, per_page=per_page, total=total, css_framework='bootstrap4')
+
+    return render_template('admin/admin_cars.html', cars=cars, pagination=pagination)
