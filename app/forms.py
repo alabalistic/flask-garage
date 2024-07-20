@@ -107,3 +107,14 @@ class AdminEditUserForm(FlaskForm):
             user = User.query.filter_by(phone_number=phone_number.data).first()
             if user:
                 raise ValidationError('Вече съществува потребител с този телефонен номер')
+            
+class UpdateAccountForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
+    phone_number = StringField('Phone Number', validators=[DataRequired(), Length(min=10, max=30)])
+    password = PasswordField('New Password', validators=[Length(min=6, max=60)])
+    submit = SubmitField('Update')
+
+    def validate_phone_number(self, phone_number):
+        user = User.query.filter_by(phone_number=phone_number.data).first()
+        if user and user.id != current_user.id:
+            raise ValidationError('This phone number is already taken. Please choose a different one.')

@@ -1,47 +1,49 @@
 {% extends "layout.html" %}
 {% block content %}
 <div class="container mt-4">
-    <h1>Управление на Автомобили</h1>
-    <form method="get" action="{{ url_for('admin_cars') }}" class="mb-3">
-        <div class="form-group">
-            <label for="visibility">Филтър по Видимост</label>
-            <select name="visibility" id="visibility" class="form-control">
-                <option value="">Всички</option>
-                <option value="true" {% if request.args.get('visibility') == 'true' %}selected{% endif %}>Видими</option>
-                <option value="false" {% if request.args.get('visibility') == 'false' %}selected{% endif %}>Скрити</option>
-            </select>
-        </div>
-        <button type="submit" class="btn btn-primary">Филтрирай</button>
-    </form>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Регистрационен номер</th>
-                <th>Собственик</th>
-                <th>Телефон на Собственика</th>
-                <th>Механик</th>
-                <th>Видимост</th>
-                <th>Действия</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for car in cars %}
-            <tr>
-                <td>{{ car.registration_number }}</td>
-                <td>{{ car.owner.name if car.owner else 'Orphaned' }}</td>
-                <td>{{ car.owner.phone_number if car.owner else 'N/A' }}</td>
-                <td>{{ car.mechanic.username if car.mechanic else 'N/A' }}</td>
-                <td>{{ 'Видим' if car.visibility else 'Скрит' }}</td>
-                <td>
-                    {% if not car.visibility %}
-                    <form method="post" action="{{ url_for('restore_car_visibility', car_id=car.id) }}" style="display:inline;">
-                        <button type="submit" class="btn btn-success btn-sm">Възстанови</button>
-                    </form>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="content-section">
+        <h1>Управление на Автомобили</h1>
+        <form method="get" action="{{ url_for('admin_cars') }}" class="mb-3">
+            <div class="form-group">
+                <label for="visibility">Филтър по Видимост</label>
+                <select name="visibility" id="visibility" class="form-control">
+                    <option value="">Всички</option>
+                    <option value="true" {% if request.args.get('visibility') == 'true' %}selected{% endif %}>Видими</option>
+                    <option value="false" {% if request.args.get('visibility') == 'false' %}selected{% endif %}>Скрити</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Филтрирай</button>
+        </form>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Регистрационен номер</th>
+                    <th>Собственик</th>
+                    <th>Телефон на Собственика</th>
+                    <th>Механик</th>
+                    <th>Видимост</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for car in cars %}
+                <tr>
+                    <td>{{ car.registration_number }}</td>
+                    <td>{{ car.owner.name if car.owner else 'Orphaned' }}</td>
+                    <td>{{ car.owner.phone_number if car.owner else 'N/A' }}</td>
+                    <td>{{ car.mechanic.username if car.mechanic else 'N/A' }}</td>
+                    <td>{{ 'Видим' if car.visibility else 'Скрит' }}</td>
+                    <td>
+                        {% if not car.visibility %}
+                        <form method="post" action="{{ url_for('restore_car_visibility', car_id=car.id) }}" style="display:inline;">
+                            <button type="submit" class="btn btn-success btn-sm">Възстанови</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}

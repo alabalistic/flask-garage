@@ -2,9 +2,11 @@
 
 {% block content %}
 <div class="container mt-4">
-    <div class="d-flex flex-column">
-        <a href="{{ url_for('admin_users') }}" class="btn btn-outline-info mb-2">Управление на потребители</a>
-        <a href="{{ url_for('admin_cars') }}" class="btn btn-outline-info mb-2">Управление на Автомобили</a>
+    <div class="content-section">
+        <div class="d-flex flex-column">
+            <a href="{{ url_for('admin_users') }}" class="btn btn-outline-info mb-2">Управление на потребители</a>
+            <a href="{{ url_for('admin_cars') }}" class="btn btn-outline-info mb-2">Управление на Автомобили</a>
+        </div>
     </div>
 </div>
 {% endblock %}

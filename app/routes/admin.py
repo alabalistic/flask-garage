@@ -1,6 +1,6 @@
 from app import app, bcrypt, db
 from flask import render_template, url_for, flash, redirect, request
-from app.forms import RegistrationForm, LoginForm, CreateCarForm, AdminCreateUserForm, AdminEditUserForm
+from app.forms import RegistrationForm, LoginForm, CreateCarForm, AdminCreateUserForm, AdminEditUserForm, UpdateAccountForm
 from app.models import User, Car, Role
 from flask_login import login_user, current_user, logout_user, login_required
 
@@ -182,29 +182,25 @@ def logout():
     logout_user()
     return redirect(url_for('home'))
 
-@app.route("/account")
+@app.route("/account", methods=['GET', 'POST'])
 @login_required
 def account():
-    return render_template('account.html', title='Account')
+    user = User.query.get_or_404(current_user.id)
+    form = UpdateAccountForm()
 
-@app.route("/admin_cars", methods=['GET', 'POST'])
-@login_required
-def admin_cars():
-    if not current_user.is_admin():
-        flash('Достъп отказан!', 'danger')
-        return redirect(url_for('home'))
+    if form.validate_on_submit():
+        user.username = form.username.data
+        if form.password.data:
+            hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+            user.password = hashed_password
+        db.session.commit()
+        flash('Your account has been updated!', 'success')
+        return redirect(url_for('account'))
 
-    filter_visibility = request.args.get('visibility')
+    elif request.method == 'GET':
+        form.username.data = user.username
 
-    cars_query = Car.query
-
-    if filter_visibility:
-        visibility = filter_visibility.lower() == 'true'
-        cars_query = cars_query.filter_by(visibility=visibility)
-
-    cars = cars_query.all()
-
-    return render_template('admin/admin_cars.html', cars=cars)
+    return render_template('admin/account.html', title='Account', form=form)
 
 
 @app.route("/restore_car_visibility/<int:car_id>", methods=["POST"])
@@ -219,3 +215,20 @@ def restore_car_visibility(car_id):
     db.session.commit()
     flash(f'Car {car.registration_number} visibility restored successfully!', 'success')
     return redirect(url_for('admin_cars'))
+
+@app.route('/admin_cars', methods=['GET'])
+@login_required
+def admin_cars():
+    if not current_user.is_admin():
+        flash('Access denied. Admins only!', 'danger')
+        return redirect(url_for('home'))
+
+    visibility_filter = request.args.get('visibility')
+    if visibility_filter == 'true':
+        cars = Car.query.filter_by(visibility=True).all()
+    elif visibility_filter == 'false':
+        cars = Car.query.filter_by(visibility=False).all()
+    else:
+        cars = Car.query.all()
+
+    return render_template('admin/admin_cars.html', cars=cars)
