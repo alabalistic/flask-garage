@@ -65,11 +65,10 @@ class CreateCarForm(FlaskForm):
     owner_phone_number = StringField('Телефонен номер на собственика', validators=[DataRequired()])
     submit = SubmitField('Запази колата')
 
-
 class UpdateCarForm(FlaskForm):
+    vin_number = StringField('VIN номер', validators=[DataRequired()])
     additional_info = TextAreaField('Информация за автомобила', validators=[DataRequired()])
     submit = SubmitField('Запази промените')
-
 
 class CreateVisitForm(FlaskForm):
     description = TextAreaField('Информация за ремонта', validators=[DataRequired()])
