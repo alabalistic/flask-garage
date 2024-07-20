@@ -114,6 +114,8 @@ def delete_car(car_id):
     flash('Car deleted successfully!', 'success')
     return redirect(url_for('mechanic_dashboard'))
 
+
+
 @app.route("/update_car/<int:car_id>", methods=['GET', 'POST'])
 @login_required
 def update_car(car_id):
@@ -121,6 +123,7 @@ def update_car(car_id):
     form = UpdateCarForm()
     
     if form.validate_on_submit():
+        car.vin_number = form.vin_number.data
         car.additional_info = form.additional_info.data
         db.session.commit()
         flash('Car details updated successfully!', 'success')
@@ -129,9 +132,11 @@ def update_car(car_id):
         return redirect(url_for('mechanic_dashboard'))
     
     elif request.method == 'GET':
+        form.vin_number.data = car.vin_number
         form.additional_info.data = car.additional_info
     
     return render_template('mechanic/update_car.html', form=form, car=car)
+
 
 @app.route("/create_visit/<int:car_id>", methods=["POST", "GET"])
 @login_required
