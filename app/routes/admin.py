@@ -4,6 +4,25 @@ from app.forms import RegistrationForm, LoginForm, CreateCarForm, AdminCreateUse
 from app.models import User, Car, Role
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_paginate import Pagination, get_page_args
+import os
+import secrets
+from PIL import Image
+from flask import current_app
+
+def save_picture(form_picture):
+    random_hex = secrets.token_hex(8)
+    _, f_ext = os.path.splitext(form_picture.filename)
+    picture_fn = random_hex + f_ext
+    picture_path = os.path.join(current_app.root_path, 'static/profile_pics', picture_fn)
+
+    output_size = (125, 125)
+    i = Image.open(form_picture)
+    i.thumbnail(output_size)
+    i.save(picture_path)
+
+    return picture_fn
+
+
 
 @app.route("/create_user", methods=['GET', 'POST'])
 @login_required
@@ -187,7 +206,11 @@ def account():
 
     if form.validate_on_submit():
         user.username = form.username.data
-        if form.password.data:
+        user.phone_number = form.phone_number.data
+        if form.picture.data:
+            picture_file = save_picture(form.picture.data)  # Implement the save_picture function to handle file saving
+            user.image_file = picture_file
+        if form.password.data:  # Only update password if it is provided
             hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
             user.password = hashed_password
         db.session.commit()
@@ -196,8 +219,13 @@ def account():
 
     elif request.method == 'GET':
         form.username.data = user.username
+        form.phone_number.data = user.phone_number
 
-    return render_template('admin/account.html', title='Account', form=form)
+    image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
+    return render_template('admin/account.html', title='Account', form=form, image_file=image_file)
+
+
+
 
 
 @app.route("/restore_car_visibility/<int:car_id>", methods=["POST"])
