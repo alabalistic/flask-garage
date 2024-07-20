@@ -6,7 +6,7 @@
         <h2>Управление на потребители</h2>
         <div class="d-flex justify-content-between mb-3">
             <a href="{{ url_for('create_user') }}" class="btn btn btn-primary">Създай нов потребител</a>
-            <form class="form-inline" action="{{ url_for('search_users') }}" method="GET">
+            <form class="form-inline" action="{{ url_for('admin_users') }}" method="GET">
                 <input class="form-control mr-sm-2" type="search" placeholder="Търсене" aria-label="Търси" name="query">
                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Търси</button>
             </form>
@@ -31,6 +31,9 @@
                 </li>
             {% endfor %}
         </ul>
+        <div class="pagination justify-content-center">
+            {{ pagination.links }}
+        </div>
     </div>
 </div>
 {% endblock %}

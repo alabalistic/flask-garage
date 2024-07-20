@@ -8,6 +8,7 @@ from flask_login import current_user, login_required
 from datetime import datetime
 from google.cloud import speech
 import os
+from flask_paginate import Pagination, get_page_args
 
 @app.route("/create_car", methods=["POST", "GET"])
 @login_required
@@ -48,37 +49,60 @@ def create_car():
 
     return render_template('mechanic/create_car.html', form=form)
 
-@app.route("/car/<int:car_id>", methods=['GET'])
+@app.route('/car/<int:car_id>', methods=['GET'])
 @login_required
 def car_detail(car_id):
     car = Car.query.get_or_404(car_id)
-    if car.mechanic_id != current_user.id:
-        flash('Access denied. You do not have permission to view this car.', 'danger')
-        return redirect(url_for('home'))
-    
-    visits = CarVisit.query.filter_by(car_id=car.id).all()
-    return render_template('mechanic/car_detail.html', car=car, visits=visits)
+    page, per_page, offset = get_page_args(page_parameter='page', per_page_parameter='per_page', per_page=5)
 
-@app.route("/mechanic_dashboard", methods=['GET', 'POST'])
+    search_query = request.args.get('search', '').strip()
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+
+    visits_query = CarVisit.query.filter_by(car_id=car_id)
+
+    if search_query:
+        visits_query = visits_query.filter(CarVisit.description.ilike(f'%{search_query}%'))
+    
+    if start_date:
+        visits_query = visits_query.filter(CarVisit.date >= start_date)
+    
+    if end_date:
+        visits_query = visits_query.filter(CarVisit.date <= end_date)
+
+    total = visits_query.count()
+    visits = visits_query.offset(offset).limit(per_page).all()
+    
+    pagination = Pagination(page=page, per_page=per_page, total=total, css_framework='bootstrap4')
+
+    return render_template('mechanic/car_detail.html', car=car, visits=visits, pagination=pagination, search_query=search_query, start_date=start_date, end_date=end_date)
+
+
+@app.route('/mechanic_dashboard', methods=['GET', 'POST'])
 @login_required
 def mechanic_dashboard():
     search_query = request.args.get('search', '').strip()
+    page, per_page, offset = get_page_args(page_parameter='page', per_page_parameter='per_page', per_page=10)
     mechanic_id = current_user.id
 
     if search_query:
-        cars = Car.query.filter(
+        cars_query = Car.query.filter(
             (Car.mechanic_id == mechanic_id) &
             (Car.visibility == True) &
             ((Car.registration_number.contains(search_query)) |
              (Car.owner.has(CarOwner.phone_number.contains(search_query))))
-        ).all()
+        )
     else:
-        cars = Car.query.filter_by(mechanic_id=mechanic_id, visibility=True).all()
+        cars_query = Car.query.filter_by(mechanic_id=mechanic_id, visibility=True)
 
-    for car in cars:
-        car.visits.sort(key=lambda visit: visit.date, reverse=True)
+    total = cars_query.count()
+    cars = cars_query.offset(offset).limit(per_page).all()
     
-    return render_template('mechanic/mechanic_dashboard.html', cars=cars)
+    pagination = Pagination(page=page, per_page=per_page, total=total, css_framework='bootstrap4')
+
+    return render_template('mechanic/mechanic_dashboard.html', cars=cars, pagination=pagination)
+
+
 
 @app.route("/delete_car/<int:car_id>", methods=["POST"])
 @login_required

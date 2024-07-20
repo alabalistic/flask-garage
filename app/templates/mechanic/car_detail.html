@@ -10,7 +10,26 @@
             <li class="list-group-item"><strong>Собственик:</strong> {{ car.owner.name }} ({{ car.owner.phone_number }})</li>
         </ul>
         <a href="{{ url_for('create_visit', car_id=car.id) }}" class="btn btn btn-primary mt-3">Ново посещение</a>
+        
         <h3 class="mt-4">Посещения</h3>
+        
+        <form method="GET" action="{{ url_for('car_detail', car_id=car.id) }}" class="mb-3">
+            <div class="form-row">
+                <div class="form-group col-md-4">
+                    <input type="text" name="search" class="form-control" placeholder="Търси по описание" value="{{ search_query }}">
+                </div>
+                <div class="form-group col-md-3">
+                    <input type="date" name="start_date" class="form-control" value="{{ start_date }}">
+                </div>
+                <div class="form-group col-md-3">
+                    <input type="date" name="end_date" class="form-control" value="{{ end_date }}">
+                </div>
+                <div class="form-group col-md-2">
+                    <button type="submit" class="btn btn-primary btn-block">Търси</button>
+                </div>
+            </div>
+        </form>
+
         <ul class="list-group">
             {% for visit in visits %}
                 <li class="list-group-item">
@@ -19,6 +38,9 @@
                 </li>
             {% endfor %}
         </ul>
+        <div class="pagination justify-content-center mt-4">
+            {{ pagination.links }}
+        </div>
     </div>
 </div>
 {% endblock %}
