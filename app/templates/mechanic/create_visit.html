@@ -16,7 +16,6 @@
         </div>
         <button type="submit" class="btn btn btn-primary">Запази</button>
     </form>
-    <audio id="localAudio" controls style="display:none;"></audio>
 </div>
 
 <script>
@@ -28,11 +27,10 @@
   function getLocalStream() {
       navigator.mediaDevices.getUserMedia({ audio: true })
           .then((stream) => {
-              const audioElement = document.getElementById('localAudio');
-              if (audioElement) {
-                  audioElement.srcObject = stream;
-                  audioElement.autoplay = true;
-              }
+              mediaRecorder = new MediaRecorder(stream);
+              mediaRecorder.ondataavailable = (event) => {
+                  audioChunks.push(event.data);
+              };
           })
           .catch((err) => {
               console.error(`Error accessing microphone: ${err}`);
@@ -44,63 +42,52 @@
     const recordButton = document.getElementById('record-button');
     if (recordButton) {
       recordButton.addEventListener('click', () => {
-        getLocalStream(); // Request permissions
         if (isRecording) {
           mediaRecorder.stop();
           isRecording = false;
           recordButton.innerText = "🎤 Започни запис";
         } else {
-          navigator.mediaDevices.getUserMedia({ audio: true })
-            .then(stream => {
-              mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
-              mediaRecorder.start();
-              isRecording = true;
-              audioChunks = [];
-              recordButton.innerText = "⏹️ Спри запис";
+          getLocalStream(); // Request permissions and start recording
+          audioChunks = [];
+          mediaRecorder.start();
+          isRecording = true;
+          recordButton.innerText = "⏹️ Спри запис";
 
-              mediaRecorder.ondataavailable = event => {
-                audioChunks.push(event.data);
-              };
+          mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const audioContext = new AudioContext();
+            const fileReader = new FileReader();
+            fileReader.onload = function() {
+              audioContext.decodeAudioData(fileReader.result, function(buffer) {
+                const offlineContext = new OfflineAudioContext(buffer.numberOfChannels, buffer.duration * 48000, 48000);
+                const source = offlineContext.createBufferSource();
+                source.buffer = buffer;
+                source.connect(offlineContext.destination);
+                source.start(0);
+                offlineContext.startRendering().then(renderedBuffer => {
+                  const downsampledAudioBlob = bufferToWave(renderedBuffer);
+                  const formData = new FormData();
+                  formData.append('audio', downsampledAudioBlob, 'audio.wav');
+                  formData.append('channels', renderedBuffer.numberOfChannels);
 
-              mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                const fileReader = new FileReader();
-                fileReader.onload = function() {
-                  audioContext.decodeAudioData(fileReader.result, function(buffer) {
-                    const offlineContext = new OfflineAudioContext(buffer.numberOfChannels, buffer.duration * 48000, 48000);
-                    const source = offlineContext.createBufferSource();
-                    source.buffer = buffer;
-                    source.connect(offlineContext.destination);
-                    source.start(0);
-                    offlineContext.startRendering().then(renderedBuffer => {
-                      const downsampledAudioBlob = bufferToWave(renderedBuffer);
-                      const formData = new FormData();
-                      formData.append('audio', downsampledAudioBlob, 'audio.wav');
-                      formData.append('channels', renderedBuffer.numberOfChannels);
-
-                      fetch('{{ url_for("speech_to_text") }}', {
-                        method: 'POST',
-                        body: formData
-                      })
-                      .then(response => response.json())
-                      .then(data => {
-                        if (data.transcript) {
-                          document.getElementById('description').value = data.transcript;
-                        } else {
-                          alert('Грешка при транскрипцията: ' + data.error);
-                        }
-                      })
-                      .catch(error => console.error('Error:', error));
-                    });
-                  });
-                };
-                fileReader.readAsArrayBuffer(audioBlob);
-              };
-            })
-            .catch(error => {
-              console.error('Error accessing audio stream:', error);
-              alert('Error accessing audio stream. Please check your microphone permissions.');
-            });
+                  fetch('{{ url_for("speech_to_text") }}', {
+                    method: 'POST',
+                    body: formData
+                  })
+                  .then(response => response.json())
+                  .then(data => {
+                    if (data.transcript) {
+                      document.getElementById('description').value = data.transcript;
+                    } else {
+                      alert('Грешка при транскрипцията: ' + data.error);
+                    }
+                  })
+                  .catch(error => console.error('Error:', error));
+                });
+              });
+            };
+            fileReader.readAsArrayBuffer(audioBlob);
+          };
         }
       });
     }
