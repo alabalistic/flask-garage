@@ -10,7 +10,42 @@
 </head>
 <body>
     <header class="site-header">
-        <!-- Navigation content -->
+      <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand mr-4" href="/">Начална страница</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarToggle">
+                <div class="navbar-nav mr-auto">
+                    {% if current_user.is_admin() %}
+                        <a class="nav-item nav-link" href="{{ url_for('admin_dashboard') }}">Админ</a>
+                    {% endif %}
+                    {% if current_user.is_mechanic() %}
+                        <a class="nav-item nav-link" href="{{ url_for('mechanic_dashboard') }}">Моите коли</a>
+                    {% endif %}
+                </div>
+                <div class="navbar-nav ml-auto">
+                    {% if current_user.is_authenticated %}
+                        <span class="navbar-text mr-3">
+                            {{ current_user.username }}   
+                            {% if current_user.is_admin() %}
+                                Администратор
+                            {% elif current_user.is_mechanic() %}
+                                Механик
+                            {% elif current_user.is_car_owner() %}
+                                Собственик на кола
+                            {% endif %}
+                        </span>
+                        <a class="nav-item nav-link" href="{{ url_for('logout') }}">Изход</a>
+                    {% else %}
+                        <a class="nav-item nav-link" href="{{ url_for('login') }}">Вход</a>
+                        <a class="nav-item nav-link" href="{{ url_for('register') }}">Регистрация</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
     </header>
     <main role="main" class="container-fluid mt-5">
         <div class="row">
