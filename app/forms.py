@@ -1,10 +1,10 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, TextAreaField
-from wtforms.validators import DataRequired, Length, EqualTo,  ValidationError
-from app.models import User, Car
-import re
-
-
+from wtforms import StringField, FileField,  PasswordField, SubmitField, BooleanField, SelectField, TextAreaField
+from wtforms.validators import DataRequired, Length, EqualTo,  ValidationError, Optional
+from app.models import User
+from app.models import User
+from flask_wtf.file import FileAllowed
+from flask_login import current_user
 
 CYRILLIC_TO_LATIN_MAP = {
     'А': 'A', 
@@ -110,7 +110,8 @@ class AdminEditUserForm(FlaskForm):
 class UpdateAccountForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
     phone_number = StringField('Phone Number', validators=[DataRequired(), Length(min=10, max=30)])
-    password = PasswordField('New Password', validators=[Length(min=6, max=60)])
+    picture = FileField('Update Profile Picture', validators=[FileAllowed(['jpg', 'png'])])
+    password = PasswordField('New Password', validators=[Optional(), Length(min=6, max=60)])
     submit = SubmitField('Update')
 
     def validate_phone_number(self, phone_number):
