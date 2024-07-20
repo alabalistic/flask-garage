@@ -56,26 +56,21 @@ def car_detail(car_id):
     page, per_page, offset = get_page_args(page_parameter='page', per_page_parameter='per_page', per_page=5)
 
     search_query = request.args.get('search', '').strip()
-    start_date = request.args.get('start_date')
-    end_date = request.args.get('end_date')
 
     visits_query = CarVisit.query.filter_by(car_id=car_id)
 
     if search_query:
-        visits_query = visits_query.filter(CarVisit.description.ilike(f'%{search_query}%'))
-    
-    if start_date:
-        visits_query = visits_query.filter(CarVisit.date >= start_date)
-    
-    if end_date:
-        visits_query = visits_query.filter(CarVisit.date <= end_date)
+        visits_query = visits_query.filter(
+            (CarVisit.description.ilike(f'%{search_query}%')) |
+            (CarVisit.date.like(f'%{search_query}%'))
+        )
 
     total = visits_query.count()
     visits = visits_query.offset(offset).limit(per_page).all()
     
     pagination = Pagination(page=page, per_page=per_page, total=total, css_framework='bootstrap4')
 
-    return render_template('mechanic/car_detail.html', car=car, visits=visits, pagination=pagination, search_query=search_query, start_date=start_date, end_date=end_date)
+    return render_template('mechanic/car_detail.html', car=car, visits=visits, pagination=pagination, search_query=search_query)
 
 
 @app.route('/mechanic_dashboard', methods=['GET', 'POST'])
