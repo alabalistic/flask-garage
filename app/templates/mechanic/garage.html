@@ -1,17 +1,19 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="content-section">
-    {% for car in cars %}
-        <article class="media content-section">
-            <div class="media-body">
-                <div class="article-metadata">
-                    <a class="mr-2" href="#">{{ car.car_registration_number }} {{ car.car_owner_name }} тел: {{car.car_owner_phone_number}}</a>
-                    <small class="text-muted">{{ car.car_owner_rating }}</small>
+<div class="container mt-4">
+    <div class="content-section">
+        {% for car in cars %}
+            <article class="media content-section">
+                <div class="media-body">
+                    <div class="article-metadata">
+                        <a class="mr-2" href="#">{{ car.car_registration_number }} {{ car.car_owner_name }} тел: {{car.car_owner_phone_number}}</a>
+                        <small class="text-muted">{{ car.car_owner_rating }}</small>
+                    </div>
+                    <h2><a class="article-title" href="#">{{ car.car_vin_number }}</a></h2>
+                    <p class="article-content">{{ car.car_additional_info }}</p>
                 </div>
-                <h2><a class="article-title" href="#">{{ car.car_vin_number }}</a></h2>
-                <p class="article-content">{{ car.car_additional_info }}</p>
-            </div>
-        </article>
-    {% endfor %}
+            </article>
+        {% endfor %}
+    </div>
 </div>
 {% endblock %}

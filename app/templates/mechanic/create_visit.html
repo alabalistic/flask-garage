@@ -1,21 +1,23 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="content-section">
-    <h2>Регистрирай посещение на автомобила: {{ car.registration_number }}</h2>
-    <form id="visit-form" method="POST" action="{{ url_for('create_visit', car_id=car.id) }}" enctype="multipart/form-data">
-        {{ form.hidden_tag() }}
-        <div class="form-group">
-            <label for="description">Информация за ремонта</label>
-            {{ form.description(class="form-control") }}
-            <div class="input-group mt-2">
-                <div class="input-group-append">
-                    <button type="button" class="btn btn-outline-secondary" id="record-button">🎤 Започни запис</button>
+<div class="container mt-4">
+    <div class="content-section">
+        <h2>Регистрирай посещение на автомобила: {{ car.registration_number }}</h2>
+        <form id="visit-form" method="POST" action="{{ url_for('create_visit', car_id=car.id) }}" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                <label for="description">Информация за ремонта</label>
+                {{ form.description(class="form-control") }}
+                <div class="input-group mt-2">
+                    <div class="input-group-append">
+                        <button type="button" class="btn btn-outline-secondary" id="record-button">🎤 Започни запис</button>
+                    </div>
                 </div>
             </div>
-        </div>
-        <button type="submit" class="btn btn btn-primary">Запази</button>
-    </form>
+            <button type="submit" class="btn btn btn-primary">Запази</button>
+        </form>
+    </div>
 </div>
 
 <script>
@@ -51,7 +53,6 @@
                 const fileReader = new FileReader();
                 fileReader.onload = function() {
                   audioContext.decodeAudioData(fileReader.result, function(buffer) {
-                    // Downsample to 48000 Hz and convert to LINEAR16
                     const offlineContext = new OfflineAudioContext(buffer.numberOfChannels, buffer.duration * 48000, 48000);
                     const source = offlineContext.createBufferSource();
                     source.buffer = buffer;
@@ -99,28 +100,26 @@
         channels = [], i, sample,
         offset = 0, pos = 0;
 
-    // write WAVE header
-    setUint32(0x46464952);                         // "RIFF"
-    setUint32(length - 8);                         // file length - 8
-    setUint32(0x45564157);                         // "WAVE"
+    setUint32(0x46464952);
+    setUint32(length - 8);
+    setUint32(0x45564157);
 
-    setUint32(0x20746D66);                         // "fmt " chunk
-    setUint32(16);                                 // length = 16
-    setUint16(1);                                  // PCM (uncompressed)
+    setUint32(0x20746D66);
+    setUint32(16);
+    setUint16(1);
     setUint16(numOfChan);
     setUint32(48000);
-    setUint32(48000 * 2 * numOfChan);              // avg. bytes/sec
-    setUint16(numOfChan * 2);                      // block-align
-    setUint16(16);                                 // 16-bit (hardcoded in this demo)
+    setUint32(48000 * 2 * numOfChan);
+    setUint16(numOfChan * 2);
+    setUint16(16);
 
-    setUint32(0x61746164);                         // "data" - chunk
-    setUint32(length - pos - 4);                   // chunk length
+    setUint32(0x61746164);
+    setUint32(length - pos - 4);
 
-    // write interleaved data
     for(i = 0; i < buffer.length; i++) {
       for (let channel = 0; channel < numOfChan; channel++) {
-        sample = buffer.getChannelData(channel)[i] * 0x7FFF; // scale to 16-bit signed int
-        view.setInt16(pos, sample, true);        // write 16-bit sample
+        sample = buffer.getChannelData(channel)[i] * 0x7FFF;
+        view.setInt16(pos, sample, true);
         pos += 2;
       }
     }

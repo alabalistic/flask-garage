@@ -1,47 +1,47 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="content-section">
-    <!-- Button and Search Bar for All Devices -->
-    <div class="mb-4">
-        <a href="{{ url_for('create_car') }}" class="btn btn btn-primary btn-block mb-3">Регистрирай кола</a>
-        <form method="GET" action="{{ url_for('mechanic_dashboard') }}">
-            <div class="input-group">
-                <input type="text" name="search" class="form-control mb-2 mr-sm-2" placeholder="Търси по регистрация или телефон" value="{{ request.args.get('search', '') }}">
-                <div class="input-group-append">
-                    <button type="submit" class="btn btn-outline-success mb-2">Търси</button>
+<div class="container mt-4">
+    <div class="content-section">
+        <div class="mb-4">
+            <a href="{{ url_for('create_car') }}" class="btn btn btn-primary btn-block mb-3">Регистрирай кола</a>
+            <form method="GET" action="{{ url_for('mechanic_dashboard') }}">
+                <div class="input-group">
+                    <input type="text" name="search" class="form-control mb-2 mr-sm-2" placeholder="Търси по регистрация или телефон" value="{{ request.args.get('search', '') }}">
+                    <div class="input-group-append">
+                        <button type="submit" class="btn btn-outline-success mb-2">Търси</button>
+                    </div>
                 </div>
-            </div>
-        </form>
-    </div>
-
-    <h3 class="mb-4">Моите коли</h3>
-    <div class="table-responsive">
-        <table class="table table-striped table-bordered text-center">
-            <thead class="thead-dark">
-                <tr>
-                    <th>Номер</th>
-                    <th class="information">Информация</th>
-                    <th>Телефон</th>
-                    <th>Редакция</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for car in cars %}
+            </form>
+        </div>
+        <h3 class="mb-4">Моите коли</h3>
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered text-center">
+                <thead class="thead-dark">
                     <tr>
-                        <td><a href="{{ url_for('car_detail', car_id=car.id) }}">{{ car.registration_number }}</a></td>
-                        <td class="information">{{ car.additional_info }}</td>
-                        <td>{{ car.owner.phone_number }}</td>
-                        <td>
-                            <a href="{{ url_for('update_car', car_id=car.id) }}" class="btn btn-outline-secondary btn-sm mb-1">Кориг.</a>
-                            <form action="{{ url_for('delete_car', car_id=car.id) }}" method="POST" style="display:inline;">
-                                <button type="submit" class="btn btn-outline-danger btn-sm">Изтрий</button>
-                            </form>
-                        </td>
+                        <th>Номер</th>
+                        <th class="information">Информация</th>
+                        <th>Телефон</th>
+                        <th>Редакция</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {% for car in cars %}
+                        <tr>
+                            <td><a href="{{ url_for('car_detail', car_id=car.id) }}">{{ car.registration_number }}</a></td>
+                            <td class="information">{{ car.additional_info }}</td>
+                            <td>{{ car.owner.phone_number }}</td>
+                            <td>
+                                <a href="{{ url_for('update_car', car_id=car.id) }}" class="btn btn-outline-secondary btn-sm mb-1">Кориг.</a>
+                                <form action="{{ url_for('delete_car', car_id=car.id) }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Изтрий</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}
