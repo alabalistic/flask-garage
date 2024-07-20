@@ -1,15 +1,13 @@
-from app import app, bcrypt, db
+# app/routes/mechanic.py
+from app import app, db
 from sqlalchemy.exc import IntegrityError
 from flask import render_template, url_for, flash, redirect, request, jsonify
 from app.forms import CreateCarForm, CreateVisitForm, UpdateCarForm
-from app.models import Car, CarOwner, CarVisit, User
+from app.models import Car, CarOwner, CarVisit
 from flask_login import current_user, login_required
 from datetime import datetime
 from google.cloud import speech
 import os
-
-# Initialize the Google Cloud Speech client
-client = speech.SpeechClient.from_service_account_file(os.getenv('GOOGLE_APPLICATION_CREDENTIALS'))
 
 @app.route("/create_car", methods=["POST", "GET"])
 @login_required
@@ -61,8 +59,6 @@ def car_detail(car_id):
     visits = CarVisit.query.filter_by(car_id=car.id).all()
     return render_template('mechanic/car_detail.html', car=car, visits=visits)
 
-
-
 @app.route("/mechanic_dashboard", methods=['GET', 'POST'])
 @login_required
 def mechanic_dashboard():
@@ -99,7 +95,6 @@ def delete_car(car_id):
     flash('Car deleted successfully!', 'success')
     return redirect(url_for('mechanic_dashboard'))
 
-
 @app.route("/update_car/<int:car_id>", methods=['GET', 'POST'])
 @login_required
 def update_car(car_id):
@@ -118,15 +113,6 @@ def update_car(car_id):
         form.additional_info.data = car.additional_info
     
     return render_template('mechanic/update_car.html', form=form, car=car)
-
-
-##########################
-#########################
-# Speech to text
-#######################
-#######################
-#client = speech.SpeechClient.from_service_account_file(os.getenv('GOOGLE_APPLICATION_CREDENTIALS'))
-#client = speech.SpeechClient.from_service_account_file("/home/yne/flask/instance/google-speech-to-text-key.json")
 
 @app.route("/create_visit/<int:car_id>", methods=["POST", "GET"])
 @login_required
@@ -151,17 +137,28 @@ def create_visit(car_id):
 @app.route('/speech_to_text', methods=['POST'])
 @login_required
 def speech_to_text():
-    if 'audio' not in request.files:
-        return jsonify({"error": "No audio file provided"}), 400
+    app.logger.info("Request files: %s", request.files)
+    app.logger.info("Request form: %s", request.form)
+
+    if 'audio' not in request.files or 'channels' not in request.form:
+        return jsonify({"error": "No audio file or channel count provided"}), 400
+
     audio_file = request.files['audio']
     audio_content = audio_file.read()
+    channels = int(request.form['channels'])
 
+    credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+    if not credentials_path:
+        return jsonify({"error": "Google application credentials not set"}), 500
+
+    client = speech.SpeechClient.from_service_account_file(credentials_path)
+    
     audio = speech.RecognitionAudio(content=audio_content)
     config = speech.RecognitionConfig(
-        encoding=speech.RecognitionConfig.AudioEncoding.WEBM_OPUS,
-        enable_automatic_punctuation=True,
+        encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
         language_code="bg-BG",
-        audio_channel_count=1,
+        audio_channel_count=channels,
+        sample_rate_hertz=48000,
     )
 
     response = client.recognize(config=config, audio=audio)

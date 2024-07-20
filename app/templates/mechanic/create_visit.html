@@ -23,49 +23,119 @@
   let mediaRecorder;
   let audioChunks = [];
 
-  document.getElementById('record-button').addEventListener('click', () => {
-    if (isRecording) {
-      mediaRecorder.stop();
-      isRecording = false;
-      document.getElementById('record-button').innerText = "🎤 Започни запис";
-    } else {
-      navigator.mediaDevices.getUserMedia({ audio: true })
-        .then(stream => {
-          mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
-          mediaRecorder.start();
-          isRecording = true;
-          audioChunks = [];
-          document.getElementById('record-button').innerText = "⏹️ Спри запис";
+  document.addEventListener('DOMContentLoaded', (event) => {
+    const recordButton = document.getElementById('record-button');
+    if (recordButton) {
+      recordButton.addEventListener('click', () => {
+        if (isRecording) {
+          mediaRecorder.stop();
+          isRecording = false;
+          recordButton.innerText = "🎤 Започни запис";
+        } else {
+          navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+              mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+              mediaRecorder.start();
+              isRecording = true;
+              audioChunks = [];
+              recordButton.innerText = "⏹️ Спри запис";
 
-          mediaRecorder.ondataavailable = event => {
-            audioChunks.push(event.data);
-          };
+              mediaRecorder.ondataavailable = event => {
+                audioChunks.push(event.data);
+              };
 
-          mediaRecorder.onstop = () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-            const formData = new FormData();
-            formData.append('audio', audioBlob, 'audio.webm');
+              mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
 
-            fetch('{{ url_for("speech_to_text") }}', {
-              method: 'POST',
-              body: formData
+                const audioContext = new AudioContext();
+                const fileReader = new FileReader();
+                fileReader.onload = function() {
+                  audioContext.decodeAudioData(fileReader.result, function(buffer) {
+                    // Downsample to 48000 Hz and convert to LINEAR16
+                    const offlineContext = new OfflineAudioContext(buffer.numberOfChannels, buffer.duration * 48000, 48000);
+                    const source = offlineContext.createBufferSource();
+                    source.buffer = buffer;
+                    source.connect(offlineContext.destination);
+                    source.start(0);
+                    offlineContext.startRendering().then(renderedBuffer => {
+                      const downsampledAudioBlob = bufferToWave(renderedBuffer);
+                      const formData = new FormData();
+                      formData.append('audio', downsampledAudioBlob, 'audio.wav');
+                      formData.append('channels', renderedBuffer.numberOfChannels);
+
+                      fetch('{{ url_for("speech_to_text") }}', {
+                        method: 'POST',
+                        body: formData
+                      })
+                      .then(response => response.json())
+                      .then(data => {
+                        if (data.transcript) {
+                          document.getElementById('description').value = data.transcript;
+                        } else {
+                          alert('Грешка при транскрипцията: ' + data.error);
+                        }
+                      })
+                      .catch(error => console.error('Error:', error));
+                    });
+                  });
+                };
+                fileReader.readAsArrayBuffer(audioBlob);
+              };
             })
-            .then(response => response.json())
-            .then(data => {
-              if (data.transcript) {
-                document.getElementById('description').value = data.transcript;
-              } else {
-                alert('Грешка при транскрипцията: ' + data.error);
-              }
-            })
-            .catch(error => console.error('Error:', error));
-          };
-        })
-        .catch(error => {
-          console.error('Error accessing audio stream:', error);
-          alert('Error accessing audio stream. Please check your microphone permissions.');
-        });
+            .catch(error => {
+              console.error('Error accessing audio stream:', error);
+              alert('Error accessing audio stream. Please check your microphone permissions.');
+            });
+        }
+      });
     }
   });
+
+  function bufferToWave(buffer) {
+    let numOfChan = buffer.numberOfChannels,
+        length = buffer.length * numOfChan * 2 + 44,
+        bufferArray = new ArrayBuffer(length),
+        view = new DataView(bufferArray),
+        channels = [], i, sample,
+        offset = 0, pos = 0;
+
+    // write WAVE header
+    setUint32(0x46464952);                         // "RIFF"
+    setUint32(length - 8);                         // file length - 8
+    setUint32(0x45564157);                         // "WAVE"
+
+    setUint32(0x20746D66);                         // "fmt " chunk
+    setUint32(16);                                 // length = 16
+    setUint16(1);                                  // PCM (uncompressed)
+    setUint16(numOfChan);
+    setUint32(48000);
+    setUint32(48000 * 2 * numOfChan);              // avg. bytes/sec
+    setUint16(numOfChan * 2);                      // block-align
+    setUint16(16);                                 // 16-bit (hardcoded in this demo)
+
+    setUint32(0x61746164);                         // "data" - chunk
+    setUint32(length - pos - 4);                   // chunk length
+
+    // write interleaved data
+    for(i = 0; i < buffer.length; i++) {
+      for (let channel = 0; channel < numOfChan; channel++) {
+        sample = buffer.getChannelData(channel)[i] * 0x7FFF; // scale to 16-bit signed int
+        view.setInt16(pos, sample, true);        // write 16-bit sample
+        pos += 2;
+      }
+    }
+
+    return new Blob([bufferArray], { type: "audio/wav" });
+
+    function setUint16(data) {
+      view.setUint16(pos, data, true);
+      pos += 2;
+    }
+
+    function setUint32(data) {
+      view.setUint32(pos, data, true);
+      pos += 4;
+    }
+  }
 </script>
 {% endblock %}

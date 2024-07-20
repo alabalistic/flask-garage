@@ -1,3 +1,4 @@
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask
 from flask_bcrypt import Bcrypt
@@ -6,17 +7,16 @@ from dotenv import load_dotenv
 import os
 import logging
 from logging.handlers import RotatingFileHandler
+
 load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', '5791677770b13ce0c676dfde280ba245')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///site.db')
-app.config['MECHANIC_REGISTER_TOKEN'] = os.getenv('MECHANIC_REGISTER_TOKEN', 'Smenisiparolata')
-
-#os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', '/opt/docker-deployments/flask-garage/instance/calendar-asem-task-665b953fc252.json')
-
+app.config['MECHANIC_REGISTER_TOKEN'] = os.getenv('MECHANIC_REGISTER_TOKEN', 'mypasswordisyours')
 
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'

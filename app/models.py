@@ -91,3 +91,5 @@ class Anonymous(AnonymousUserMixin):
         return False
 
 login_manager.anonymous_user = Anonymous
+
+
