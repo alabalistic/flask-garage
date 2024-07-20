@@ -137,20 +137,28 @@ def create_visit(car_id):
 @app.route('/speech_to_text', methods=['POST'])
 @login_required
 def speech_to_text():
-    if 'audio' not in request.files:
-        return jsonify({"error": "No audio file provided"}), 400
+    app.logger.info("Request files: %s", request.files)
+    app.logger.info("Request form: %s", request.form)
+
+    if 'audio' not in request.files or 'channels' not in request.form:
+        return jsonify({"error": "No audio file or channel count provided"}), 400
+
     audio_file = request.files['audio']
     audio_content = audio_file.read()
+    channels = int(request.form['channels'])
 
-    # Initialize the Google Cloud Speech client within the route
-    client = speech.SpeechClient.from_service_account_file(os.getenv('GOOGLE_APPLICATION_CREDENTIALS'))
+    credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+    if not credentials_path:
+        return jsonify({"error": "Google application credentials not set"}), 500
+
+    client = speech.SpeechClient.from_service_account_file(credentials_path)
     
     audio = speech.RecognitionAudio(content=audio_content)
     config = speech.RecognitionConfig(
-        encoding=speech.RecognitionConfig.AudioEncoding.WEBM_OPUS,
-        enable_automatic_punctuation=True,
+        encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
         language_code="bg-BG",
-        audio_channel_count=1,
+        audio_channel_count=channels,
+        sample_rate_hertz=48000,
     )
 
     response = client.recognize(config=config, audio=audio)

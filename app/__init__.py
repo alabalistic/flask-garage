@@ -13,7 +13,7 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', '5791677770b13ce0c676dfde280ba245')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///site.db')
-app.config['MECHANIC_REGISTER_TOKEN'] = os.getenv('MECHANIC_REGISTER_TOKEN', 'Smenisiparolata')
+app.config['MECHANIC_REGISTER_TOKEN'] = os.getenv('MECHANIC_REGISTER_TOKEN', 'mypasswordisyours')
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
