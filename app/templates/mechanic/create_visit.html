@@ -23,10 +23,26 @@
   let mediaRecorder;
   let audioChunks = [];
 
+  function getLocalStream() {
+      navigator.mediaDevices.getUserMedia({ audio: true })
+          .then((stream) => {
+              const audioElement = document.getElementById('localAudio');
+              if (audioElement) {
+                  audioElement.srcObject = stream;
+                  audioElement.autoplay = true;
+              }
+          })
+          .catch((err) => {
+              console.error(`Error accessing microphone: ${err}`);
+              alert('Error accessing microphone. Please check your microphone permissions.');
+          });
+  }
+
   document.addEventListener('DOMContentLoaded', (event) => {
     const recordButton = document.getElementById('record-button');
     if (recordButton) {
       recordButton.addEventListener('click', () => {
+        getLocalStream();
         if (isRecording) {
           mediaRecorder.stop();
           isRecording = false;
@@ -46,12 +62,10 @@
 
               mediaRecorder.onstop = () => {
                 const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-
                 const audioContext = new AudioContext();
                 const fileReader = new FileReader();
                 fileReader.onload = function() {
                   audioContext.decodeAudioData(fileReader.result, function(buffer) {
-                    // Downsample to 48000 Hz and convert to LINEAR16
                     const offlineContext = new OfflineAudioContext(buffer.numberOfChannels, buffer.duration * 48000, 48000);
                     const source = offlineContext.createBufferSource();
                     source.buffer = buffer;
