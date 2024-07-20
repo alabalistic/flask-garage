@@ -16,12 +16,14 @@
         </div>
         <button type="submit" class="btn btn btn-primary">Запази</button>
     </form>
+    <audio id="localAudio" controls style="display:none;"></audio>
 </div>
 
 <script>
   let isRecording = false;
   let mediaRecorder;
   let audioChunks = [];
+  let audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
   function getLocalStream() {
       navigator.mediaDevices.getUserMedia({ audio: true })
@@ -34,7 +36,7 @@
           })
           .catch((err) => {
               console.error(`Error accessing microphone: ${err}`);
-              alert('Error accessing microphone. Please check your microphone permissions.');
+              alert('Error accessing microphone. Please check your microphone permissions in Safari settings.');
           });
   }
 
@@ -42,7 +44,7 @@
     const recordButton = document.getElementById('record-button');
     if (recordButton) {
       recordButton.addEventListener('click', () => {
-        getLocalStream();
+        getLocalStream(); // Request permissions
         if (isRecording) {
           mediaRecorder.stop();
           isRecording = false;
@@ -62,7 +64,6 @@
 
               mediaRecorder.onstop = () => {
                 const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                const audioContext = new AudioContext();
                 const fileReader = new FileReader();
                 fileReader.onload = function() {
                   audioContext.decodeAudioData(fileReader.result, function(buffer) {
