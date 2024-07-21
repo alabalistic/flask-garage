@@ -15,7 +15,9 @@ class User(db.Model, UserMixin):
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     visibility = db.Column(db.Boolean, nullable=False, default=True)
     roles = db.relationship('Role', secondary='user_roles', backref=db.backref('users', lazy='dynamic'))
-
+    posts = db.relationship('Post', backref='author', lazy=True, cascade='all, delete-orphan')
+    comments = db.relationship('Comment', backref='author', lazy=True, cascade='all, delete-orphan')
+    
     def __repr__(self):
         return f"User('{self.username}', '{self.phone_number}')"
 
@@ -29,6 +31,11 @@ class User(db.Model, UserMixin):
         return self.has_role('mechanic')
     def is_car_owner(self):
         return self.has_role('car_owner')
+    
+    def can_comment(self, post):
+        if self.id == post.user_id or self.is_mechanic():
+            return True
+        return False
 
 # Association table for user roles
 user_roles = db.Table('user_roles',
@@ -94,3 +101,24 @@ class Anonymous(AnonymousUserMixin):
 login_manager.anonymous_user = Anonymous
 
 
+
+class Post(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    comments = db.relationship('Comment', backref='post', lazy=True, cascade='all, delete-orphan')
+
+    def __repr__(self):
+        return f"Post('{self.title}', '{self.date_posted}')"
+
+class Comment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+
+    def __repr__(self):
+        return f"Comment('{self.content}', '{self.date_posted}')"

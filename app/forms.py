@@ -118,3 +118,12 @@ class UpdateAccountForm(FlaskForm):
         user = User.query.filter_by(phone_number=phone_number.data).first()
         if user and user.id != current_user.id:
             raise ValidationError('This phone number is already taken. Please choose a different one.')
+        
+class PostForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired(), Length(min=2, max=100)])
+    content = TextAreaField('Content', validators=[DataRequired()])
+    submit = SubmitField('Post')
+
+class CommentForm(FlaskForm):
+    content = TextAreaField('Content', validators=[DataRequired()])
+    submit = SubmitField('Comment')
