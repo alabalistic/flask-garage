@@ -241,6 +241,7 @@ def restore_car_visibility(car_id):
     flash(f'Car {car.registration_number} visibility restored successfully!', 'success')
     return redirect(url_for('admin_cars'))
 
+
 @app.route('/admin_cars', methods=['GET'])
 @login_required
 def admin_cars():
