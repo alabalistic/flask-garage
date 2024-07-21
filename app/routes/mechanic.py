@@ -26,28 +26,38 @@ def create_car():
                 db.session.add(owner)
                 db.session.flush()
 
-            car = Car(
-                registration_number=form.registration_number.data.upper(),
-                vin_number=form.vin_number.data.upper(),
-                additional_info=form.additional_info.data,
-                owner_id=owner.id,
-                mechanic_id=current_user.id
-            )
-            db.session.add(car)
-            db.session.commit()
-            flash('Car added successfully!', 'success')
-            app.logger.info(f'{current_user.username} added car {car.registration_number}')
-            return redirect(url_for('mechanic_dashboard'))
+            car = Car.query.filter_by(registration_number=form.registration_number.data.upper(), mechanic_id=current_user.id).first()
+            if car:
+                if car.visibility:
+                    flash('This car already exists in your fleet. Redirecting to create a visit.', 'info')
+                    return redirect(url_for('create_visit', car_id=car.id))
+                else:
+                    # Restore the car if it was previously deleted
+                    car.visibility = True
+                    car.vin_number = form.vin_number.data.upper()
+                    car.additional_info = form.additional_info.data
+                    car.owner_id = owner.id
+                    db.session.commit()
+                    flash('Car restored successfully!', 'success')
+                    return redirect(url_for('mechanic_dashboard'))
+            else:
+                new_car = Car(
+                    registration_number=form.registration_number.data.upper(),
+                    vin_number=form.vin_number.data.upper(),
+                    additional_info=form.additional_info.data,
+                    owner_id=owner.id,
+                    mechanic_id=current_user.id
+                )
+                db.session.add(new_car)
+                db.session.commit()
+                flash('Car added successfully!', 'success')
+                return redirect(url_for('mechanic_dashboard'))
         except IntegrityError:
             db.session.rollback()
-            existing_car = Car.query.filter_by(registration_number=form.registration_number.data.upper(), mechanic_id=current_user.id).first()
-            if existing_car:
-                flash('This car already exists in your fleet. Redirecting to create a visit.', 'info')
-                return redirect(url_for('create_visit', car_id=existing_car.id))
-            else:
-                flash('An unexpected error occurred. Please try again.', 'danger')
+            flash('An unexpected error occurred. Please try again.', 'danger')
 
     return render_template('mechanic/create_car.html', form=form)
+
 
 @app.route('/car/<int:car_id>', methods=['GET'])
 @login_required
@@ -110,9 +120,9 @@ def delete_car(car_id):
 
     car.visibility = False
     db.session.commit()
-    app.logger.info(f'{current_user.username} deleted car {car.registration_number}')
     flash('Car deleted successfully!', 'success')
     return redirect(url_for('mechanic_dashboard'))
+
 
 
 

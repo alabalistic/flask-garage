@@ -68,7 +68,7 @@ class Car(db.Model):
 
     def __repr__(self):
         return f"Car('{self.registration_number}', '{self.vin_number}')"
-    
+
 class CarVisit(db.Model):
     __tablename__ = 'car_visit'
     id = db.Column(db.Integer, primary_key=True)
