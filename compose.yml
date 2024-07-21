@@ -2,10 +2,18 @@ version: '3.8'
 
 services:
   web:
-    image: flask-garage  # Use the pre-built image name
+    image: alabalistic/flask-garage:latest   
     ports:
       - "5000:5000"
     environment:
-      FLASK_ENV: production
+      - FLASK_ENV= production
+      - FLASK_APP=run.py
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/instance/google-speech-to-text-key.json
     volumes:
-      - ./instance:/instance  # Mount the instance directory
+      - ./instance:/app/instance  
+      - ./static:/app/app/static
+    env_file:
+      - .env
+
+
+
