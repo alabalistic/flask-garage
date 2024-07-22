@@ -29,6 +29,7 @@ class User(db.Model, UserMixin):
 
     def is_mechanic(self):
         return self.has_role('mechanic')
+        
     def is_car_owner(self):
         return self.has_role('car_owner')
     
@@ -104,14 +105,14 @@ login_manager.anonymous_user = Anonymous
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     comments = db.relationship('Comment', backref='post', lazy=True, cascade='all, delete-orphan')
 
     def __repr__(self):
-        return f"Post('{self.title}', '{self.date_posted}')"
+        return f"Post('{self.date_posted}')"
+
 
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)

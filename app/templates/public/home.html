@@ -1,20 +1,44 @@
-<!-- app/templates/public/home.html -->
+<!-- home.html -->
 {% extends "layout.html" %}
 {% block content %}
 <div class="content-section">
-    {% if current_user.is_authenticated %}
-        <a href="{{ url_for('new_post') }}" class="btn btn-primary mb-4">Create Post</a>
-    {% endif %}
+    <form method="POST" action="{{ url_for('new_post') }}">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            <label for="content" class="form-label">Кратко описание на вашият проблем и механик ще ви отговори, за да да бъдете оведомени за отговр регистрирайте се с телефонен номер.</label>
+            {{ form.content(class="form-control", placeholder="Пример: Смяна на масло за Нисан Патрол, кой може да ме смести в графика си тази седмица?") }}
+        </div>
+        <button type="submit" class="btn btn-primary">Post</button>
+    </form>
+    <hr>
     {% for post in posts %}
         <article class="media content-section">
+            <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pics/' + post.author.image_file) }}">
             <div class="media-body">
                 <div class="article-metadata">
-                    <a class="mr-2" href="{{ url_for('post', post_id=post.id) }}">{{ post.title }}</a>
+                    <a class="mr-2" href="{{ url_for('post', post_id=post.id) }}">{{ post.author.username }}</a>
                     <small class="text-muted">{{ post.date_posted.strftime('%Y-%m-%d %H:%M') }}</small>
                 </div>
                 <p class="article-content">{{ post.content[:200] }}...</p>
+                <div id="comments-{{ post.id }}" class="comments-section">
+                    {% for comment in post.comments[:2] %}
+                        <div class="media mt-2">
+                            <img class="rounded-circle comment-img" src="{{ url_for('static', filename='profile_pics/' + comment.author.image_file) }}">
+                            <div class="media-body">
+                                <h6 class="mt-0">{{ comment.author.username }}</h6>
+                                {{ comment.content }}
+                                <small class="text-muted">{{ comment.date_posted.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    {% if post.comments|length > 2 %}
+                        <a href="#" class="view-all-comments" data-post-id="{{ post.id }}">View all comments...</a>
+                        <a href="#" class="collapse-comments" data-post-id="{{ post.id }}" style="display: none;">Collapse comments</a>
+                    {% endif %}
+                </div>
             </div>
         </article>
+        <hr>
     {% endfor %}
 </div>
 {% endblock %}

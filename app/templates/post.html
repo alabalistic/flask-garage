@@ -1,10 +1,9 @@
-<!-- app/templates/post.html -->
 {% extends "layout.html" %}
 {% block content %}
 <article class="media content-section">
     <div class="media-body">
         <div class="article-metadata">
-            <h2>{{ post.title }}</h2>
+            <h2>{{ post.author.username }}</h2>
             <small class="text-muted">{{ post.date_posted.strftime('%Y-%m-%d %H:%M') }}</small>
         </div>
         <p class="article-content">{{ post.content }}</p>
@@ -20,6 +19,7 @@
 </article>
 {% endfor %}
 
+{% if current_user.is_authenticated and (current_user.id == post.user_id or current_user.is_mechanic()) %}
 <div class="content-section">
     <form method="POST" action="">
         {{ form.hidden_tag() }}
@@ -34,4 +34,7 @@
         </div>
     </form>
 </div>
+{% else %}
+<p class="text-muted">You do not have permission to comment on this post.</p>
+{% endif %}
 {% endblock %}
