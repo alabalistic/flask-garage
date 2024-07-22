@@ -111,7 +111,8 @@ class UpdateAccountForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
     phone_number = StringField('Phone Number', validators=[DataRequired(), Length(min=10, max=30)])
     picture = FileField('Update Profile Picture', validators=[FileAllowed(['jpg', 'png'])])
-    password = PasswordField('New Password', validators=[Optional(), Length(min=6, max=60)])
+    password = PasswordField('New Password', validators=[Optional(), Length(min=6, max=60), EqualTo('confirm', message='Passwords must match')])
+    confirm = PasswordField('Repeat Password')
     submit = SubmitField('Update')
 
     def validate_phone_number(self, phone_number):
