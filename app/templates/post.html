@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+{% block content %}
+<article class="media content-section">
+    <div class="media-body">
+        <div class="article-metadata">
+            <h2>{{ post.author.username }}</h2>
+            <small class="text-muted">{{ post.date_posted.strftime('%Y-%m-%d %H:%M') }}</small>
+        </div>
+        <p class="article-content">{{ post.content }}</p>
+    </div>
+</article>
+
+{% for comment in comments %}
+<article class="media content-section">
+    <div class="media-body">
+        <p class="article-content">{{ comment.content }}</p>
+        <small class="text-muted">{{ comment.date_posted.strftime('%Y-%m-%d %H:%M') }}</small>
+    </div>
+</article>
+{% endfor %}
+
+{% if current_user.is_authenticated and (current_user.id == post.user_id or current_user.is_mechanic()) %}
+<div class="content-section">
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <fieldset class="form-group">
+            <div class="form-group">
+                {{ form.content.label(class="form-control-label") }}
+                {{ form.content(class="form-control form-control-lg") }}
+            </div>
+        </fieldset>
+        <div class="form-group">
+            {{ form.submit(class="btn btn-primary btn-lg") }}
+        </div>
+    </form>
+</div>
+{% else %}
+<p class="text-muted">You do not have permission to comment on this post.</p>
+{% endif %}
+{% endblock %}
