@@ -30,7 +30,7 @@ def posts():
 def new_post():
     form = PostForm()
     if form.validate_on_submit():
-        user_id = current_user.id if current_user.is_authenticated else User.query.filter_by(username='Анонимен потребител').first().id
+        user_id = current_user.id if current_user.is_authenticated else User.query.filter_by(username='Анонимен').first().id
         post = Post(content=form.content.data, user_id=user_id)
         db.session.add(post)
         db.session.commit()
