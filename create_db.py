@@ -23,7 +23,7 @@ with app.app_context():
     if not User.query.filter_by(username="Mechanic").first():
         mechanic_user = User(username='Mechanic', phone_number="08779939461", password="$2b$12$rO6wrQC5uuyOg/LYIUbvmOxd7KhL3qaWfITos07XbCAgREWXlF2Am" )
         db.session.add(mechanic_user)
-    if not User.query.filter_by(username="Anonymous").first():
-        anonymous_user = User(username='Anonymous', phone_number='0000000000', password='$2b$12$rO6wrQC5uuyOg/LYIUbvmOxd7KhL3qaWfITos07XbCAgREWXlF2Am')
+    if not User.query.filter_by(username="Анонимен").first():
+        anonymous_user = User(username='Анонимен', phone_number='0000000000', password='$2b$12$rO6wrQC5uuyOg/LYIUbvmOxd7KhL3qaWfITos07XbCAgREWXlF2Am')
         db.session.add(anonymous_user)
     db.session.commit()
