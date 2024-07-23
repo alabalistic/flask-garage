@@ -13,7 +13,7 @@
     <header class="site-header">
         <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
             <div class="container">
-                <a class="navbar-brand mr-4" href="/">Home</a>
+                <a class="navbar-brand mr-4" href="/">Начална страница</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -49,8 +49,8 @@
                         {% endif %}
                         <!-- Search Bar -->
                         <form class="form-inline my-2 my-lg-0" method="GET" action="{{ url_for('search_posts') }}">
-                            <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
-                            <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Search</button>
+                            <input class="form-control mr-sm-2" type="search" placeholder="Какво" aria-label="Search" name="query">
+                            <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Търсите</button>
                         </form>
                     </div>
                 </div>
@@ -60,7 +60,7 @@
     <main role="main" class="container-fluid mt-5 pt-3">
         <div class="row">
             <aside class="col-md-3 sidebar">
-                <h5>Mechanics</h5>
+                <h5>Нашият екип:</h5>
                 <ul class="list-unstyled">
                     {% for mechanic in mechanics %}
                         <li class="media my-2">

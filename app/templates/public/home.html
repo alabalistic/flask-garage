@@ -4,21 +4,20 @@
 <div class="content-section">
     <!-- Hero Section -->
     <div class="jumbotron text-center">
-        <h1>Welcome to Гаража</h1>
-        <p>Your one-stop solution for all car repairs and mechanic bookings</p>
-        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Register Now</a>
+        <h1>Добре дошли в гаража</h1>
+        <p>Мястото където ще намерите точния механик.</p>
+        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Регистрация</a>
     </div>
     
-    <!-- Search Bar -->
-    <div class="search-bar">
-        <form method="GET" action="{{ url_for('search_posts') }}">
-            <div class="input-group">
-                <input type="text" class="form-control" placeholder="Search posts or mechanics" name="query">
-                <div class="input-group-append">
-                    <button class="btn btn-secondary" type="submit">Search</button>
-                </div>
-            </div>
-        </form>
+    <!-- Informational Paragraph -->
+    <div class="info-paragraph">
+        <p>Ето как работи: <br>
+            Този ап е направен от група механици с цел бърза и лесна комуникация с клинети. <br>
+            Опишете вашият проблем в полето и някой от нас ще ви отговори, ориентира или препрати към подходящият специалист. <br>
+            Анонимни потребители могат само да зададът въпрос, само регистрирани потребители могат да участват в дискусия. <br>
+            Само регистрирани механици могат да отговарят на въпроси.
+
+        </p>
     </div>
     <hr>
     
@@ -26,10 +25,10 @@
     <form method="POST" action="{{ url_for('new_post') }}">
         {{ form.hidden_tag() }}
         <div class="form-group">
-            <label for="content" class="form-label">Describe your issue and a mechanic will respond. Register with your phone number to be notified of responses.</label>
-            {{ form.content(class="form-control", placeholder="Example: Oil change for Nissan Patrol, who can fit me in this week?") }}
+            <label for="content" class="form-label">Опишете вашият проблем. Препоръчително е да се регистрирате</label>
+            {{ form.content(class="form-control", placeholder="Пример:Нисан Патрол смяна на масло и филтри. Кой може да го направи тази седмица") }}
         </div>
-        <button type="submit" class="btn btn-primary">Post</button>
+        <button type="submit" class="btn btn-primary">Изпрати запитване</button>
     </form>
     <hr>
 

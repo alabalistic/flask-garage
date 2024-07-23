@@ -40,7 +40,7 @@ def new_post():
         post = Post(content=form.content.data, user_id=user_id)
         db.session.add(post)
         db.session.commit()
-        flash('Your post has been created!', 'success')
+        flash('Поста е създаден успешно', 'success')
         return redirect(url_for('home'))
     return render_template('create_post.html', title='New Post', form=form, legend='New Post')
 
