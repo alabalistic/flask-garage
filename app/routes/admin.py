@@ -1,7 +1,7 @@
 from app import app, bcrypt, db
 from flask import render_template, url_for, flash, redirect, request
-from app.forms import RegistrationForm, LoginForm, CreateCarForm, AdminCreateUserForm, AdminEditUserForm, UpdateAccountForm
-from app.models import User, Car, Role
+from app.forms import RegistrationForm, LoginForm, MechanicProfileForm, AdminCreateUserForm, AdminEditUserForm, UpdateAccountForm
+from app.models import User, Car, Role, RepairShopImage
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_paginate import Pagination, get_page_args
 import os
@@ -9,18 +9,19 @@ import secrets
 from PIL import Image
 from flask import current_app
 
-def save_picture(form_picture):
+def save_picture(form_picture, folder='profile_pics'):
     random_hex = secrets.token_hex(8)
     _, f_ext = os.path.splitext(form_picture.filename)
     picture_fn = random_hex + f_ext
-    picture_path = os.path.join(current_app.root_path, 'static/profile_pics', picture_fn)
+    picture_path = os.path.join(current_app.root_path, 'static', folder, picture_fn)
 
-    output_size = (125, 125)
+    output_size = (500, 500)
     i = Image.open(form_picture)
     i.thumbnail(output_size)
     i.save(picture_path)
 
     return picture_fn
+
 
 
 
@@ -207,6 +208,8 @@ def account():
     if form.validate_on_submit():
         user.username = form.username.data
         user.phone_number = form.phone_number.data
+        user.biography = form.biography.data
+        user.expertise = form.expertise.data
         if form.picture.data:
             picture_file = save_picture(form.picture.data)  # Implement the save_picture function to handle file saving
             user.image_file = picture_file
@@ -220,9 +223,12 @@ def account():
     elif request.method == 'GET':
         form.username.data = user.username
         form.phone_number.data = user.phone_number
+        form.biography.data = user.biography
+        form.expertise.data = user.expertise
 
     image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
     return render_template('admin/account.html', title='Account', form=form, image_file=image_file)
+
 
 
 
@@ -265,3 +271,38 @@ def admin_cars():
     pagination = Pagination(page=page, per_page=per_page, total=total, css_framework='bootstrap4')
 
     return render_template('admin/admin_cars.html', cars=cars, pagination=pagination)
+
+@app.route("/mechanic_profile/update", methods=['GET', 'POST'])
+@login_required
+def update_mechanic_profile():
+    if not current_user.is_mechanic():
+        flash('Достъп отказан. Само механици могат да актуализират профила си.', 'danger')
+        return redirect(url_for('home'))
+
+    form = MechanicProfileForm()
+    if form.validate_on_submit():
+        current_user.username = form.username.data
+        current_user.phone_number = form.phone_number.data
+        current_user.biography = form.biography.data
+        current_user.expertise = form.expertise.data
+
+        if form.profile_picture.data:
+            picture_file = save_picture(form.profile_picture.data, folder='profile_pics')
+            current_user.image_file = picture_file
+
+        if form.repair_shop_pictures.data:
+            for picture in request.files.getlist(form.repair_shop_pictures.name):
+                picture_file = save_picture(picture, folder='repair_shop_pics')
+                repair_shop_image = RepairShopImage(image_file=picture_file, user_id=current_user.id)
+                db.session.add(repair_shop_image)
+
+        db.session.commit()
+        flash('Профилът ви е актуализиран!', 'success')
+        return redirect(url_for('mechanic_profile', mechanic_id=current_user.id))
+    elif request.method == 'GET':
+        form.username.data = current_user.username
+        form.phone_number.data = current_user.phone_number
+        form.biography.data = current_user.biography
+        form.expertise.data = current_user.expertise
+
+    return render_template('public/update_mechanic_profile.html', title='Актуализиране на профила', form=form)

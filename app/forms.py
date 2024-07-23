@@ -111,6 +111,8 @@ class UpdateAccountForm(FlaskForm):
     username = StringField('Потребителско име', validators=[DataRequired(), Length(min=2, max=20)])
     phone_number = StringField('Телефонен номер', validators=[DataRequired(), Length(min=10, max=30)])
     picture = FileField('Качи профилна снимка', validators=[FileAllowed(['jpg', 'png'])])
+    biography = TextAreaField('Биография', validators=[Optional(), Length(max=500)])
+    expertise = StringField('Експертиза', validators=[Optional(), Length(max=200)])
     password = PasswordField('Нова парола', validators=[Optional(), Length(min=6, max=60), EqualTo('confirm', message='Passwords must match')])
     confirm = PasswordField('Повтори паролата')
     submit = SubmitField('Запази промените')
@@ -119,7 +121,7 @@ class UpdateAccountForm(FlaskForm):
         user = User.query.filter_by(phone_number=phone_number.data).first()
         if user and user.id != current_user.id:
             raise ValidationError('Този номер е зает. опитайте с друг или Влезте в своя профил.')
-        
+
 class PostForm(FlaskForm):
     content = TextAreaField('Content', validators=[DataRequired()])
     submit = SubmitField('Post')
@@ -132,3 +134,17 @@ class CommentForm(FlaskForm):
 class SearchForm(FlaskForm):
     query = StringField('Search', validators=[DataRequired()])
     submit = SubmitField('Search')
+
+class MechanicProfileForm(FlaskForm):
+    username = StringField('Потребителско име', validators=[DataRequired(), Length(min=2, max=20)])
+    phone_number = StringField('Телефонен номер', validators=[DataRequired(), Length(min=10, max=30)])
+    biography = TextAreaField('Биография', validators=[Optional(), Length(max=500)])
+    expertise = StringField('Експертиза', validators=[Optional(), Length(max=200)])
+    profile_picture = FileField('Качи профилна снимка', validators=[FileAllowed(['jpg', 'png'])])
+    repair_shop_pictures = FileField('Качи снимки на сервиза', validators=[FileAllowed(['jpg', 'png'])], render_kw={"multiple": True})
+    submit = SubmitField('Запази промените')
+
+    def validate_phone_number(self, phone_number):
+        user = User.query.filter_by(phone_number=phone_number.data).first()
+        if user and user.id != current_user.id:
+            raise ValidationError('Този номер е зает. опитайте с друг или Влезте в своя профил.')

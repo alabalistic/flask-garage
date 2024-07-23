@@ -2,7 +2,7 @@
 
 from app import app, db
 from app.forms import PostForm, CommentForm
-from app.models import Post, Comment, Car, User, Role
+from app.models import Post, Comment, Car, User, Role, RepairShopImage
 from flask import render_template, url_for, flash, redirect, request, jsonify
 from flask_login import current_user, login_required
 from google.cloud import speech
@@ -86,7 +86,9 @@ def mechanic_profile(mechanic_id):
     if not mechanic.is_mechanic():
         flash('This user is not a mechanic.', 'danger')
         return redirect(url_for('home'))
-    return render_template('public/mechanic_profile.html', mechanic=mechanic)
+    repair_shop_images = RepairShopImage.query.filter_by(user_id=mechanic.id).all()
+    return render_template('public/mechanic_profile.html', mechanic=mechanic, repair_shop_images=repair_shop_images)
+
 
 @app.route("/search", methods=['GET'])
 def search():
@@ -138,3 +140,4 @@ def speech_to_text():
         return jsonify({"transcript": transcript.strip()}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    

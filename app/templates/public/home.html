@@ -2,31 +2,19 @@
 {% extends "layout.html" %}
 {% block content %}
 <div class="content-section">
+
     <!-- Hero Section -->
     <div class="jumbotron text-center">
-        <h1>Добре дошли в гаража</h1>
-        <p>Мястото където ще намерите точния механик.</p>
-        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Регистрация</a>
+        <h1>Welcome to the Garage</h1>
+        <p>Your go-to place for finding the right mechanic.</p>
     </div>
-    
-    <!-- Informational Paragraph -->
-    <div class="info-paragraph">
-        <p>Ето как работи: <br>
-            Този ап е направен от група механици с цел бърза и лесна комуникация с клинети. <br>
-            Опишете вашият проблем в полето и някой от нас ще ви отговори, ориентира или препрати към подходящият специалист. <br>
-            Анонимни потребители могат само да зададът въпрос, само регистрирани потребители могат да участват в дискусия. <br>
-            Само регистрирани механици могат да отговарят на въпроси.
 
-        </p>
-    </div>
-    <hr>
-    
     <!-- Post Form -->
-    <form method="POST" action="{{ url_for('new_post') }}">
+    <form method="POST" action="{{ url_for('new_post') }}" class="post-form mb-4">
         {{ form.hidden_tag() }}
         <div class="form-group">
-            <label for="content" class="form-label">Опишете вашият проблем. Препоръчително е да се регистрирате</label>
-            {{ form.content(class="form-control", id="post-content", placeholder="Пример:Нисан Патрол смяна на масло и филтри. Кой може да го направи тази седмица") }}
+            <label for="content" class="form-label">Describe your issue (Recommended to register)</label>
+            {{ form.content(class="form-control", id="post-content", placeholder="E.g., Nissan Patrol oil and filter change. Who can do it this week?") }}
         </div>
         {% if current_user.is_authenticated and current_user.is_mechanic() %}
         <div class="input-group mt-2">
@@ -35,12 +23,13 @@
             </div>
         </div>
         {% endif %}
-        <button type="submit" class="btn btn-primary mt-2">Изпрати запитване</button>
+        <button type="submit" class="btn btn-primary mt-2">Submit</button>
     </form>
-    <hr>
 
     <!-- Latest Posts -->
-    {% for post in posts %}
+    <div class="latest-posts">
+        <h4>Latest Questions</h4>
+        {% for post in posts %}
         <article class="media content-section">
             <a href="{{ url_for('post', post_id=post.id) }}" class="stretched-link"></a>
             <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pics/' + post.author.image_file) }}">
@@ -52,33 +41,54 @@
                 <p class="article-content">{{ post.content[:200] }}...</p>
                 <div id="comments-{{ post.id }}" class="comments-section">
                     {% for comment in post.comments[:2] %}
-                        <div class="media mt-2">
-                            <img class="rounded-circle comment-img" src="{{ url_for('static', filename='profile_pics/' + comment.author.image_file) }}">
-                            <div class="media-body">
-                                <h6 class="mt-0">
-                                    {% if comment.author.is_mechanic() %}
-                                        <a href="{{ url_for('mechanic_profile', mechanic_id=comment.author.id) }}">{{ comment.author.username }}</a>
-                                    {% else %}
-                                        {{ comment.author.username }}
-                                    {% endif %}
-                                </h6>
-                                {{ comment.content }}
-                                <small class="text-muted">{{ comment.date_posted.strftime('%Y-%m-%d %H:%M') }}</small>
-                            </div>
+                    <div class="media mt-2">
+                        <img class="rounded-circle comment-img" src="{{ url_for('static', filename='profile_pics/' + comment.author.image_file) }}">
+                        <div class="media-body">
+                            <h6 class="mt-0">
+                                {% if comment.author.is_mechanic() %}
+                                <a href="{{ url_for('mechanic_profile', mechanic_id=comment.author.id) }}">{{ comment.author.username }}</a>
+                                {% else %}
+                                {{ comment.author.username }}
+                                {% endif %}
+                            </h6>
+                            {{ comment.content }}
+                            <small class="text-muted">{{ comment.date_posted.strftime('%Y-%m-%d %H:%M') }}</small>
                         </div>
+                    </div>
                     {% endfor %}
                     {% if post.comments|length > 2 %}
-                        <a href="#" class="view-all-comments" data-post-id="{{ post.id }}">View all comments...</a>
-                        <a href="#" class="collapse-comments" data-post-id="{{ post.id }}" style="display: none;">Collapse comments</a>
+                    <a href="#" class="view-all-comments" data-post-id="{{ post.id }}">View all comments...</a>
+                    <a href="#" class="collapse-comments" data-post-id="{{ post.id }}" style="display: none;">Collapse comments</a>
                     {% endif %}
                 </div>
             </div>
         </article>
         <hr>
-    {% endfor %}
+        {% endfor %}
+    </div>
+
+    <!-- Mechanics Section -->
+    <div class="mechanics-section mt-5">
+        <h4>Our Mechanics</h4>
+        <div class="row">
+            {% for mechanic in mechanics %}
+            <div class="col-12 col-sm-6 col-md-4 mb-3">
+                <div class="card">
+                    <img class="card-img-top" src="{{ url_for('static', filename='profile_pics/' + mechanic.image_file) }}" alt="Mechanic profile picture">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ mechanic.username }}</h5>
+                        <p class="card-text">{{ mechanic.expertise }}</p>
+                        <a href="{{ url_for('mechanic_profile', mechanic_id=mechanic.id) }}" class="btn btn-primary">View Profile</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
 </div>
 
 <script>
+    // Script for handling audio recording (same as previous script)
     let isRecording = false;
     let mediaRecorder;
     let audioChunks = [];
@@ -128,7 +138,7 @@
                                             })
                                             .then(response => response.json())
                                             .then(data => {
-                                                console.log('Server response:', data); // Log the server response for debugging
+                                                console.log('Server response:', data);
                                                 if (data.transcript) {
                                                     document.getElementById('post-content').value = data.transcript;
                                                 } else {
