@@ -86,12 +86,24 @@ def mechanic_profile(mechanic_id):
         return redirect(url_for('home'))
     return render_template('public/mechanic_profile.html', mechanic=mechanic)
 
-@app.route("/search_posts", methods=['GET'])
-def search_posts():
-    query = request.args.get('query')
-    if query:
-        posts = Post.query.filter(Post.content.contains(query)).order_by(Post.date_posted.desc()).all()
-    else:
-        posts = Post.query.order_by(Post.date_posted.desc()).all()
+# public.py
+
+
+# public.py
+
+# public.py
+
+@app.route("/search", methods=['GET'])
+def search():
+    query = request.args.get('query', '').strip()
     
-    return render_template('posts.html', posts=posts, query=query)
+    if query:
+        posts = Post.query.filter(Post.content.ilike(f'%{query}%')).order_by(Post.date_posted.desc()).all()
+        mechanics = User.query.filter(User.roles.any(Role.name == 'mechanic'), User.username.ilike(f'%{query}%')).all()
+        comments = Comment.query.filter(Comment.content.ilike(f'%{query}%')).order_by(Comment.date_posted.desc()).all()
+    else:
+        posts = []
+        mechanics = []
+        comments = []
+    
+    return render_template('search_results.html', posts=posts, mechanics=mechanics, comments=comments, query=query)
