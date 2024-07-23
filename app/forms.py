@@ -108,17 +108,17 @@ class AdminEditUserForm(FlaskForm):
                 raise ValidationError('Вече съществува потребител с този телефонен номер')
             
 class UpdateAccountForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
-    phone_number = StringField('Phone Number', validators=[DataRequired(), Length(min=10, max=30)])
-    picture = FileField('Update Profile Picture', validators=[FileAllowed(['jpg', 'png'])])
-    password = PasswordField('New Password', validators=[Optional(), Length(min=6, max=60), EqualTo('confirm', message='Passwords must match')])
-    confirm = PasswordField('Repeat Password')
-    submit = SubmitField('Update')
+    username = StringField('Потребителско име', validators=[DataRequired(), Length(min=2, max=20)])
+    phone_number = StringField('Телефонен номер', validators=[DataRequired(), Length(min=10, max=30)])
+    picture = FileField('Качи профилна снимка', validators=[FileAllowed(['jpg', 'png'])])
+    password = PasswordField('Нова парола', validators=[Optional(), Length(min=6, max=60), EqualTo('confirm', message='Passwords must match')])
+    confirm = PasswordField('Повтори паролата')
+    submit = SubmitField('Запази промените')
 
     def validate_phone_number(self, phone_number):
         user = User.query.filter_by(phone_number=phone_number.data).first()
         if user and user.id != current_user.id:
-            raise ValidationError('This phone number is already taken. Please choose a different one.')
+            raise ValidationError('Този номер е зает. опитайте с друг или Влезте в своя профил.')
         
 class PostForm(FlaskForm):
     content = TextAreaField('Content', validators=[DataRequired()])
@@ -128,3 +128,7 @@ class PostForm(FlaskForm):
 class CommentForm(FlaskForm):
     content = TextAreaField('Content', validators=[DataRequired()])
     submit = SubmitField('Comment')
+
+class SearchForm(FlaskForm):
+    query = StringField('Search', validators=[DataRequired()])
+    submit = SubmitField('Search')

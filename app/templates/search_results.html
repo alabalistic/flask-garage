@@ -1,0 +1,60 @@
+<!-- search_results.html -->
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section">
+    <h1 class="mb-4">Search Results</h1>
+    {% if query %}
+        <p>Showing results for "{{ query }}":</p>
+    {% endif %}
+    
+    <!-- Display Mechanics -->
+    <h2>Mechanics</h2>
+    {% if mechanics %}
+        <ul>
+            {% for mechanic in mechanics %}
+                <li>
+                    <a href="{{ url_for('mechanic_profile', mechanic_id=mechanic.id) }}">{{ mechanic.username }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No mechanics found.</p>
+    {% endif %}
+    
+    <!-- Display Posts -->
+    <h2>Posts</h2>
+    {% if posts %}
+        {% for post in posts %}
+            <article class="media content-section">
+                <div class="media-body">
+                    <div class="article-metadata">
+                        <a class="mr-2" href="{{ url_for('post', post_id=post.id) }}">{{ post.author.username }}</a>
+                        <small class="text-muted">{{ post.date_posted.strftime('%Y-%m-%d %H:%M') }}</small>
+                    </div>
+                    <p class="article-content">{{ post.content[:200] }}...</p>
+                </div>
+            </article>
+        {% endfor %}
+    {% else %}
+        <p>No posts found.</p>
+    {% endif %}
+    
+    <!-- Display Comments -->
+    <h2>Comments</h2>
+    {% if comments %}
+        {% for comment in comments %}
+            <article class="media content-section">
+                <div class="media-body">
+                    <div class="article-metadata">
+                        <a class="mr-2" href="{{ url_for('post', post_id=comment.post_id) }}">{{ comment.author.username }}</a>
+                        <small class="text-muted">{{ comment.date_posted.strftime('%Y-%m-%d %H:%M') }}</small>
+                    </div>
+                    <p class="article-content">{{ comment.content }}</p>
+                </div>
+            </article>
+        {% endfor %}
+    {% else %}
+        <p>No comments found.</p>
+    {% endif %}
+</div>
+{% endblock %}

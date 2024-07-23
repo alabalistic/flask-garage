@@ -40,7 +40,7 @@ def new_post():
         post = Post(content=form.content.data, user_id=user_id)
         db.session.add(post)
         db.session.commit()
-        flash('Your post has been created!', 'success')
+        flash('Поста е създаден успешно', 'success')
         return redirect(url_for('home'))
     return render_template('create_post.html', title='New Post', form=form, legend='New Post')
 
@@ -85,3 +85,25 @@ def mechanic_profile(mechanic_id):
         flash('This user is not a mechanic.', 'danger')
         return redirect(url_for('home'))
     return render_template('public/mechanic_profile.html', mechanic=mechanic)
+
+# public.py
+
+
+# public.py
+
+# public.py
+
+@app.route("/search", methods=['GET'])
+def search():
+    query = request.args.get('query', '').strip()
+    
+    if query:
+        posts = Post.query.filter(Post.content.ilike(f'%{query}%')).order_by(Post.date_posted.desc()).all()
+        mechanics = User.query.filter(User.roles.any(Role.name == 'mechanic'), User.username.ilike(f'%{query}%')).all()
+        comments = Comment.query.filter(Comment.content.ilike(f'%{query}%')).order_by(Comment.date_posted.desc()).all()
+    else:
+        posts = []
+        mechanics = []
+        comments = []
+    
+    return render_template('search_results.html', posts=posts, mechanics=mechanics, comments=comments, query=query)

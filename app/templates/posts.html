@@ -1,7 +1,11 @@
+<!-- posts.html -->
 {% extends "layout.html" %}
 {% block content %}
 <div class="content-section">
     <h1 class="mb-4">Posts</h1>
+    {% if query %}
+        <p>Showing results for "{{ query }}":</p>
+    {% endif %}
     {% for post in posts %}
         <article class="media content-section">
             <div class="media-body">

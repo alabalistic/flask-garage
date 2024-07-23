@@ -14,7 +14,7 @@ from flask_paginate import Pagination, get_page_args
 @login_required
 def create_car():
     if not current_user.is_mechanic():
-        flash('Access denied. Mechanics only!', 'danger')
+        flash('Достъп отказан. Тук се допускат само механици!', 'danger')
         return redirect(url_for('home'))
 
     form = CreateCarForm()
