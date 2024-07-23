@@ -1,15 +1,39 @@
+<!-- home.html -->
 {% extends "layout.html" %}
 {% block content %}
 <div class="content-section">
+    <!-- Hero Section -->
+    <div class="jumbotron text-center">
+        <h1>Welcome to Гаража</h1>
+        <p>Your one-stop solution for all car repairs and mechanic bookings</p>
+        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Register Now</a>
+    </div>
+    
+    <!-- Search Bar -->
+    <div class="search-bar">
+        <form method="GET" action="{{ url_for('search_posts') }}">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search posts or mechanics" name="query">
+                <div class="input-group-append">
+                    <button class="btn btn-secondary" type="submit">Search</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <hr>
+    
+    <!-- Post Form -->
     <form method="POST" action="{{ url_for('new_post') }}">
         {{ form.hidden_tag() }}
         <div class="form-group">
-            <label for="content" class="form-label">Кратко описание на вашият проблем и механик ще ви отговори, за да да бъдете оведомени за отговр регистрирайте се с телефонен номер.</label>
-            {{ form.content(class="form-control", placeholder="Пример: Смяна на масло за Нисан Патрол, кой може да ме смести в графика си тази седмица?") }}
+            <label for="content" class="form-label">Describe your issue and a mechanic will respond. Register with your phone number to be notified of responses.</label>
+            {{ form.content(class="form-control", placeholder="Example: Oil change for Nissan Patrol, who can fit me in this week?") }}
         </div>
         <button type="submit" class="btn btn-primary">Post</button>
     </form>
     <hr>
+
+    <!-- Latest Posts -->
     {% for post in posts %}
         <article class="media content-section">
             <a href="{{ url_for('post', post_id=post.id) }}" class="stretched-link"></a>

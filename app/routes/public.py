@@ -85,3 +85,13 @@ def mechanic_profile(mechanic_id):
         flash('This user is not a mechanic.', 'danger')
         return redirect(url_for('home'))
     return render_template('public/mechanic_profile.html', mechanic=mechanic)
+
+@app.route("/search_posts", methods=['GET'])
+def search_posts():
+    query = request.args.get('query')
+    if query:
+        posts = Post.query.filter(Post.content.contains(query)).order_by(Post.date_posted.desc()).all()
+    else:
+        posts = Post.query.order_by(Post.date_posted.desc()).all()
+    
+    return render_template('posts.html', posts=posts, query=query)

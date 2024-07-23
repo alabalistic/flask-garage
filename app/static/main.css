@@ -150,3 +150,33 @@ h1, h2, h3, h4, h5, h6 {
   bottom: 0;
   z-index: -1;
 }
+
+/* Additional CSS for new features */
+.jumbotron {
+  background-color: #4a6c82;
+  color: #ffffff;
+  padding: 2rem 1rem;
+  margin-bottom: 2rem;
+}
+
+.search-bar .form-control {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.search-bar .btn-secondary {
+  border-radius: 0;
+}
+
+.article-img, .comment-img {
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.article-metadata a {
+  color: #4a6c82;
+}
+
+.article-metadata a:hover {
+  color: #2c3e50;
+}
