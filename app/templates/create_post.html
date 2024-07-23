@@ -1,4 +1,4 @@
-<!-- app/templates/create_post.html -->
+<!-- create_post.html -->
 {% extends "layout.html" %}
 {% block content %}
 <div class="content-section">
@@ -12,7 +12,12 @@
             </div>
             <div class="form-group">
                 {{ form.content.label(class="form-control-label") }}
-                {{ form.content(class="form-control form-control-lg") }}
+                {{ form.content(class="form-control form-control-lg", id="content") }}
+            </div>
+            <div class="input-group mt-2">
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-outline-secondary" id="record-button">🎤 Start Recording</button>
+                </div>
             </div>
         </fieldset>
         <div class="form-group">
@@ -20,4 +25,74 @@
         </div>
     </form>
 </div>
+
+<script>
+  let isRecording = false;
+  let mediaRecorder;
+  let audioChunks = [];
+
+  document.addEventListener('DOMContentLoaded', (event) => {
+    const recordButton = document.getElementById('record-button');
+    if (recordButton) {
+      recordButton.addEventListener('click', () => {
+        if (isRecording) {
+          mediaRecorder.stop();
+          isRecording = false;
+          recordButton.innerText = "🎤 Start Recording";
+        } else {
+          navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+              mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+              mediaRecorder.start();
+              isRecording = true;
+              audioChunks = [];
+              recordButton.innerText = "⏹️ Stop Recording";
+
+              mediaRecorder.ondataavailable = event => {
+                audioChunks.push(event.data);
+              };
+
+              mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                const formData = new FormData();
+                formData.append('audio', audioBlob, 'audio.webm');
+
+                const audioContext = new AudioContext();
+                const fileReader = new FileReader();
+                fileReader.onload = function() {
+                  audioContext.decodeAudioData(fileReader.result, function(buffer) {
+                    const numberOfChannels = buffer.numberOfChannels;
+                    formData.append('channels', numberOfChannels);
+
+                    fetch('{{ url_for("speech_to_text") }}', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.transcript) {
+                            document.getElementById('content').value = data.transcript;
+                        } else {
+                            alert('Error in transcription: ' + data.error);
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                  });
+                };
+                fileReader.readAsArrayBuffer(audioBlob);
+              };
+            })
+            .catch(error => {
+              console.error('Error accessing audio stream:', error);
+              alert('Error accessing audio stream. Please check your microphone permissions.');
+            });
+        }
+      });
+    }
+  });
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    alert("Your browser does not support audio recording");
+  }
+</script>
 {% endblock %}

@@ -1,4 +1,5 @@
-# app/routes/mechanic.py
+# mechanic.py
+
 from app import app, db
 from sqlalchemy.exc import IntegrityError
 from flask import render_template, url_for, flash, redirect, request, jsonify
@@ -6,8 +7,6 @@ from app.forms import CreateCarForm, CreateVisitForm, UpdateCarForm
 from app.models import Car, CarOwner, CarVisit
 from flask_login import current_user, login_required
 from datetime import datetime
-from google.cloud import speech
-import os
 from flask_paginate import Pagination, get_page_args
 
 @app.route("/create_car", methods=["POST", "GET"])
@@ -32,7 +31,6 @@ def create_car():
                     flash('This car already exists in your fleet. Redirecting to create a visit.', 'info')
                     return redirect(url_for('create_visit', car_id=car.id))
                 else:
-                    # Restore the car if it was previously deleted
                     car.visibility = True
                     car.vin_number = form.vin_number.data.upper()
                     car.additional_info = form.additional_info.data
@@ -58,7 +56,6 @@ def create_car():
 
     return render_template('mechanic/create_car.html', form=form)
 
-
 @app.route('/car/<int:car_id>', methods=['GET'])
 @login_required
 def car_detail(car_id):
@@ -81,7 +78,6 @@ def car_detail(car_id):
     pagination = Pagination(page=page, per_page=per_page, total=total, css_framework='bootstrap4')
 
     return render_template('mechanic/car_detail.html', car=car, visits=visits, pagination=pagination, search_query=search_query)
-
 
 @app.route('/mechanic_dashboard', methods=['GET', 'POST'])
 @login_required
@@ -107,8 +103,6 @@ def mechanic_dashboard():
 
     return render_template('mechanic/mechanic_dashboard.html', cars=cars, pagination=pagination)
 
-
-
 @app.route("/delete_car/<int:car_id>", methods=["POST"])
 @login_required
 def delete_car(car_id):
@@ -122,9 +116,6 @@ def delete_car(car_id):
     db.session.commit()
     flash('Car deleted successfully!', 'success')
     return redirect(url_for('mechanic_dashboard'))
-
-
-
 
 @app.route("/update_car/<int:car_id>", methods=['GET', 'POST'])
 @login_required
@@ -147,7 +138,6 @@ def update_car(car_id):
     
     return render_template('mechanic/update_car.html', form=form, car=car)
 
-
 @app.route("/create_visit/<int:car_id>", methods=["POST", "GET"])
 @login_required
 def create_visit(car_id):
@@ -167,38 +157,3 @@ def create_visit(car_id):
         return redirect(url_for('car_detail', car_id=car.id))
 
     return render_template('mechanic/create_visit.html', form=form, car=car)
-
-@app.route('/speech_to_text', methods=['POST'])
-@login_required
-def speech_to_text():
-    app.logger.info("Request files: %s", request.files)
-    app.logger.info("Request form: %s", request.form)
-
-    if 'audio' not in request.files or 'channels' not in request.form:
-        return jsonify({"error": "No audio file or channel count provided"}), 400
-
-    audio_file = request.files['audio']
-    audio_content = audio_file.read()
-    channels = int(request.form['channels'])
-
-    credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
-    if not credentials_path:
-        return jsonify({"error": "Google application credentials not set"}), 500
-
-    client = speech.SpeechClient.from_service_account_file(credentials_path)
-    
-    audio = speech.RecognitionAudio(content=audio_content)
-    config = speech.RecognitionConfig(
-        encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-        language_code="bg-BG",
-        audio_channel_count=channels,
-        sample_rate_hertz=48000,
-    )
-
-    response = client.recognize(config=config, audio=audio)
-
-    transcript = ""
-    for result in response.results:
-        transcript += result.alternatives[0].transcript + " "
-
-    return jsonify({"transcript": transcript.strip()}), 200
