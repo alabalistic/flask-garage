@@ -12,6 +12,7 @@
     <hr>
     {% for post in posts %}
         <article class="media content-section">
+            <a href="{{ url_for('post', post_id=post.id) }}" class="stretched-link"></a>
             <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pics/' + post.author.image_file) }}">
             <div class="media-body">
                 <div class="article-metadata">
@@ -24,7 +25,13 @@
                         <div class="media mt-2">
                             <img class="rounded-circle comment-img" src="{{ url_for('static', filename='profile_pics/' + comment.author.image_file) }}">
                             <div class="media-body">
-                                <h6 class="mt-0">{{ comment.author.username }}</h6>
+                                <h6 class="mt-0">
+                                    {% if comment.author.is_mechanic() %}
+                                        <a href="{{ url_for('mechanic_profile', mechanic_id=comment.author.id) }}">{{ comment.author.username }}</a>
+                                    {% else %}
+                                        {{ comment.author.username }}
+                                    {% endif %}
+                                </h6>
                                 {{ comment.content }}
                                 <small class="text-muted">{{ comment.date_posted.strftime('%Y-%m-%d %H:%M') }}</small>
                             </div>

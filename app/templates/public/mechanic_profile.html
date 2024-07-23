@@ -1,0 +1,18 @@
+<!-- mechanic_profile.html -->
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section">
+    <div class="media">
+        <img class="mr-3 rounded-circle" src="{{ url_for('static', filename='profile_pics/' + mechanic.image_file) }}" alt="Mechanic profile picture" style="width: 100px; height: 100px;">
+        <div class="media-body">
+            <h5 class="mt-0">{{ mechanic.username }}</h5>
+            <p>Phone: {{ mechanic.phone_number }}</p>
+            <p>Member since: {{ mechanic.date_created.strftime('%Y-%m-%d') }}</p>
+            <!-- Add more mechanic-specific information here -->
+        </div>
+    </div>
+    <hr>
+    <h4>About</h4>
+    <p><!-- Mechanic's bio or additional information --></p>
+</div>
+{% endblock %}
