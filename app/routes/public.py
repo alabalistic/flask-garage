@@ -2,9 +2,15 @@
 
 from app import app, db
 from app.forms import PostForm, CommentForm
-from app.models import Post, Comment, Car, User  # Import the User model
+from app.models import Post, Comment, Car, User, Role  # Import the User model
 from flask import render_template, url_for, flash, redirect, request, jsonify  # Add request to the import
 from flask_login import current_user, login_required
+from app.models import User
+
+@app.context_processor
+def inject_mechanics():
+    mechanics = User.query.filter(User.roles.any(Role.name == 'mechanic')).all()
+    return dict(mechanics=mechanics)
 
 @app.route("/")
 @app.route("/home")
@@ -72,3 +78,10 @@ def get_comments(post_id):
     } for comment in comments]
     return jsonify({'comments': comments_data})
 
+@app.route("/mechanic/<int:mechanic_id>")
+def mechanic_profile(mechanic_id):
+    mechanic = User.query.get_or_404(mechanic_id)
+    if not mechanic.is_mechanic():
+        flash('This user is not a mechanic.', 'danger')
+        return redirect(url_for('home'))
+    return render_template('public/mechanic_profile.html', mechanic=mechanic)
