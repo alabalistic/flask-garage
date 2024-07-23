@@ -98,11 +98,6 @@ h1, h2, h3, h4, h5, h6 {
   color: #2c3e50;
 }
 
-/* Ensure visibility of collapse link */
-.collapse-comments {
-  display: none;
-}
-
 .form-group {
   margin-bottom: 1rem;
 }
@@ -126,4 +121,17 @@ h1, h2, h3, h4, h5, h6 {
 .btn-primary:hover {
   background-color: #3a5a6a;
   border-color: #3a5a6a;
+}
+
+.sidebar {
+  background: #f8f9fa;
+  padding: 20px;
+  border-right: 1px solid #ced4da;
+  height: 100%;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
 }
