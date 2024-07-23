@@ -34,7 +34,7 @@ def posts():
     return render_template('posts.html', posts=all_posts)
 
 @app.route("/post/new", methods=['POST'])
-@login_required
+#@login_required
 def new_post():
     form = PostForm()
     if form.validate_on_submit():
@@ -58,7 +58,7 @@ def post(post_id):
             flash('Your comment has been added!', 'success')
             return redirect(url_for('post', post_id=post.id))
         else:
-            flash('You do not have permission to comment on this post.', 'danger')
+            flash('Само механици могат да отговарят на запитвания.', 'danger')
     comments = Comment.query.filter_by(post_id=post.id).all()
     return render_template('post.html', post=post, form=form, comments=comments)
 
