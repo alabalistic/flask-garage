@@ -28,11 +28,13 @@
             <label for="content" class="form-label">Опишете вашият проблем. Препоръчително е да се регистрирате</label>
             {{ form.content(class="form-control", id="post-content", placeholder="Пример:Нисан Патрол смяна на масло и филтри. Кой може да го направи тази седмица") }}
         </div>
+        {% if current_user.is_authenticated and current_user.is_mechanic() %}
         <div class="input-group mt-2">
             <div class="input-group-append">
                 <button type="button" class="btn btn-outline-secondary" id="post-record-button">🎤 Start Recording</button>
             </div>
         </div>
+        {% endif %}
         <button type="submit" class="btn btn-primary mt-2">Изпрати запитване</button>
     </form>
     <hr>
