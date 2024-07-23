@@ -11,6 +11,8 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(100), nullable=False)
     phone_number = db.Column(db.String(30), unique=True, nullable=False)
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
+    biography = db.Column(db.Text, nullable=True)
+    expertise = db.Column(db.String(200), nullable=True)
     password = db.Column(db.String(60), nullable=False)
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     visibility = db.Column(db.Boolean, nullable=False, default=True)
@@ -37,12 +39,27 @@ class User(db.Model, UserMixin):
         if self.id == post.user_id or self.is_mechanic():
             return True
         return False
+    
+    def __repr__(self):
+        return f"User('{self.username}', '{self.phone_number}')"
 
 # Association table for user roles
 user_roles = db.Table('user_roles',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
     db.Column('role_id', db.Integer, db.ForeignKey('role.id'), primary_key=True)
 )
+
+class RepairShopImage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    image_file = db.Column(db.String(20), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    def __repr__(self):
+        return f"RepairShopImage('{self.image_file}', '{self.user_id}')"
+
+
+    def __repr__(self):
+        return f"RepairShopImage('{self.image_file}', '{self.user_id}')"
 
 class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True)

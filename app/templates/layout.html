@@ -26,6 +26,7 @@
                             {% endif %}
                             {% if current_user.is_mechanic() %}
                                 <a class="nav-item nav-link" href="{{ url_for('mechanic_dashboard') }}">Клиенти</a>
+                                <a class="nav-item nav-link" href="{{ url_for('update_mechanic_profile') }}">profil</a>
                             {% endif %}
                             <a class="nav-item nav-link" href="{{ url_for('account') }}">Моят профил</a>
                         {% endif %}

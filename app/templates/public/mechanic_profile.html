@@ -8,11 +8,21 @@
             <h5 class="mt-0">{{ mechanic.username }}</h5>
             <p>Phone: {{ mechanic.phone_number }}</p>
             <p>Member since: {{ mechanic.date_created.strftime('%Y-%m-%d') }}</p>
-            <!-- Add more mechanic-specific information here -->
+            <p>Expertise: {{ mechanic.expertise }}</p>
+            <p>Biography: {{ mechanic.biography }}</p>
         </div>
     </div>
     <hr>
-    <h4>About</h4>
-    <p><!-- Mechanic's bio or additional information --></p>
+    <h4>Repair Shop Images</h4>
+    <div class="row">
+        {% for image in repair_shop_images %}
+            <div class="col-md-4">
+                <img src="{{ url_for('static', filename='repair_shop_pics/' + image.image_file) }}" class="img-fluid">
+            </div>
+        {% endfor %}
+    </div>
+    {% if current_user.is_authenticated and current_user.id == mechanic.id %}
+        <a href="{{ url_for('update_mechanic_profile') }}" class="btn btn-primary mt-3">Актуализиране на профила</a>
+    {% endif %}
 </div>
 {% endblock %}
