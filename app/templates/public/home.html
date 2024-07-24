@@ -7,6 +7,7 @@
     <div class="jumbotron text-center">
         <h1>Welcome to the Garage</h1>
         <p>Your go-to place for finding the right mechanic.</p>
+        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Register</a>
     </div>
 
     <!-- Post Form -->
@@ -38,7 +39,7 @@
                     <a class="mr-2" href="{{ url_for('post', post_id=post.id) }}">{{ post.author.username }}</a>
                     <small class="text-muted">{{ post.date_posted.strftime('%Y-%m-%d %H:%M') }}</small>
                 </div>
-                <p class="article-content">{{ post.content[:200] }}...</p>
+                <p class="article-content">{{ post.content }}</p>
                 <div id="comments-{{ post.id }}" class="comments-section">
                     {% for comment in post.comments[:2] %}
                     <div class="media mt-2">
@@ -57,8 +58,7 @@
                     </div>
                     {% endfor %}
                     {% if post.comments|length > 2 %}
-                    <a href="#" class="view-all-comments" data-post-id="{{ post.id }}">View all comments...</a>
-                    <a href="#" class="collapse-comments" data-post-id="{{ post.id }}" style="display: none;">Collapse comments</a>
+                    <a href="{{ url_for('post', post_id=post.id) }}">View all comments...</a>
                     {% endif %}
                 </div>
             </div>
@@ -138,7 +138,7 @@
                                             })
                                             .then(response => response.json())
                                             .then(data => {
-                                                console.log('Server response:', data);
+                                                console.log('Server response:', data); // Log the server response for debugging
                                                 if (data.transcript) {
                                                     document.getElementById('post-content').value = data.transcript;
                                                 } else {
