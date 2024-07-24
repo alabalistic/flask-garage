@@ -14,8 +14,8 @@
     <form method="POST" action="{{ url_for('new_post') }}" class="post-form mb-4">
         {{ form.hidden_tag() }}
         <div class="form-group">
-            <label for="content" class="form-label">Опишете проблема тут (Регистрацията е препоръчителна)</label>
-            {{ form.content(class="form-control", id="post-content", placeholder="Пример., Смяна масло и филтри на БМВ 5 Кой може за тази седмица") }}
+            <label for="content" class="form-label">Опишете проблема тук (Регистрацията е препоръчителна)</label>
+            {{ form.content(class="form-control", id="post-content", placeholder="Пример: Смяна масло и филтри на БМВ 5 Кой може за тази седмица") }}
         </div>
         {% if current_user.is_authenticated and current_user.is_mechanic() %}
         <div class="input-group mt-2">
@@ -29,7 +29,7 @@
 
     <!-- Latest Posts -->
     <div class="latest-posts">
-        <h4>Latest Questions</h4>
+        <!-- <h4>Latest Questions</h4> -->
         {% for post in posts %}
         <article class="media content-section">
             <a href="{{ url_for('post', post_id=post.id) }}" class="stretched-link"></a>
@@ -69,7 +69,7 @@
 
     <!-- Mechanics Section -->
     <div class="mechanics-section mt-5">
-        <h4>Our Mechanics</h4>
+        <h4>Нашият екип</h4>
         <div class="row">
             {% for mechanic in mechanics %}
             <div class="col-12 col-sm-6 col-md-4 mb-3">
