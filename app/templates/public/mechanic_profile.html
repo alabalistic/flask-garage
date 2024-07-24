@@ -7,25 +7,25 @@
     <div class="profile-header text-center mb-4">
         <img class="rounded-circle profile-img" src="{{ url_for('static', filename='profile_pics/' + mechanic.image_file) }}" alt="Mechanic profile picture">
         <h2>{{ mechanic.username }}</h2>
-        <p class="phone-number"><i class="fas fa-phone"></i> {{ mechanic.phone_number }}</p>
+        <p class="phone-number"><i class="fas fa-phone"></i> Свържи се с мен на тел:{{ mechanic.phone_number }}</p>
         <p class="organization"><i class="fas fa-building"></i> {{ mechanic.organization }}</p>
     </div>
 
     <!-- Biography Section -->
     <div class="bio-section mb-4">
-        <h4>About Me</h4>
+        <h4>За {{ mechanic.username }}</h4>
         <p>{{ mechanic.biography }}</p>
     </div>
 
     <!-- Skills and Specialties Section -->
     <div class="skills-section mb-4">
-        <h4>Skills and Specialties</h4>
+        <h4>Моята специалност</h4>
         <p>{{ mechanic.expertise }}</p>
     </div>
 
     <!-- Carousel Photo Gallery -->
     <div class="gallery-section mb-4">
-        <h4>Photo Gallery</h4>
+        <h4>Галерия</h4>
         <div id="carouselExampleControls" class="carousel slide" data-ride="carousel">
             <div class="carousel-inner">
                 {% for image in repair_shop_images %}
@@ -48,7 +48,7 @@
     <!-- Edit Profile Button (Visible only to the mechanic) -->
     {% if current_user.is_authenticated and current_user.id == mechanic.id %}
     <div class="text-center">
-        <a href="{{ url_for('update_mechanic_profile') }}" class="btn btn-primary">Update Profile</a>
+        <a href="{{ url_for('update_mechanic_profile') }}" class="btn btn-primary">Редакция</a>
     </div>
     {% endif %}
 </div>
