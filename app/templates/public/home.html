@@ -5,26 +5,26 @@
 
     <!-- Hero Section -->
     <div class="jumbotron text-center">
-        <h1>Welcome to the Garage</h1>
-        <p>Your go-to place for finding the right mechanic.</p>
-        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Register</a>
+        <h1>Свържи се с механик</h1>
+        <p>Или сподели проблем, и специалист ще се свърже с вас.</p>
+        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Регистрирай се тук</a>
     </div>
 
     <!-- Post Form -->
     <form method="POST" action="{{ url_for('new_post') }}" class="post-form mb-4">
         {{ form.hidden_tag() }}
         <div class="form-group">
-            <label for="content" class="form-label">Describe your issue (Recommended to register)</label>
-            {{ form.content(class="form-control", id="post-content", placeholder="E.g., Nissan Patrol oil and filter change. Who can do it this week?") }}
+            <label for="content" class="form-label">Опишете проблема тут (Регистрацията е препоръчителна)</label>
+            {{ form.content(class="form-control", id="post-content", placeholder="Пример., Смяна масло и филтри на БМВ 5 Кой може за тази седмица") }}
         </div>
         {% if current_user.is_authenticated and current_user.is_mechanic() %}
         <div class="input-group mt-2">
             <div class="input-group-append">
-                <button type="button" class="btn btn-outline-secondary" id="post-record-button">🎤 Start Recording</button>
+                <button type="button" class="btn btn-outline-secondary" id="post-record-button">🎤 Диктофон</button>
             </div>
         </div>
         {% endif %}
-        <button type="submit" class="btn btn-primary mt-2">Submit</button>
+        <button type="submit" class="btn btn-primary mt-2">Публикувай</button>
     </form>
 
     <!-- Latest Posts -->
@@ -58,7 +58,7 @@
                     </div>
                     {% endfor %}
                     {% if post.comments|length > 2 %}
-                    <a href="{{ url_for('post', post_id=post.id) }}">View all comments...</a>
+                    <a href="{{ url_for('post', post_id=post.id) }}">Виж коментарите...</a>
                     {% endif %}
                 </div>
             </div>
@@ -78,7 +78,7 @@
                     <div class="card-body text-center">
                         <h5 class="card-title">{{ mechanic.username }}</h5>
                         <p class="card-text">{{ mechanic.expertise }}</p>
-                        <a href="{{ url_for('mechanic_profile', mechanic_id=mechanic.id) }}" class="btn btn-primary">View Profile</a>
+                        <a href="{{ url_for('mechanic_profile', mechanic_id=mechanic.id) }}" class="btn btn-primary">Виж профил</a>
                     </div>
                 </div>
             </div>
@@ -108,7 +108,7 @@
                             mediaRecorder.start();
                             isRecording = true;
                             audioChunks = [];
-                            recordButton.innerText = "⏹️ Stop Recording";
+                            recordButton.innerText = "⏹️ Спри диктофона";
 
                             mediaRecorder.ondataavailable = event => {
                                 audioChunks.push(event.data);
@@ -154,7 +154,7 @@
                         })
                         .catch(error => {
                             console.error('Error accessing audio stream:', error);
-                            alert('Error accessing audio stream. Please check your microphone permissions.');
+                            alert('Отказан достъп до микрофона, моля проверете настройките и отворете страницата в google chrome.');
                         });
                 }
             });
