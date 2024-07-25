@@ -162,3 +162,11 @@ def delete_post(post_id):
     db.session.commit()
     flash('Your post has been deleted!', 'success')
     return redirect(url_for('home'))
+
+@app.route("/privacy")
+def privacy():
+    return render_template('privacy.html', title='Политика за поверителност')
+
+@app.route("/terms")
+def terms():
+    return render_template('terms.html', title='Условия за ползване')
