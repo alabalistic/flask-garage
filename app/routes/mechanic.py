@@ -1,13 +1,15 @@
 # mechanic.py
-
-from app import app, db
-from sqlalchemy.exc import IntegrityError
 from flask import render_template, url_for, flash, redirect, request, jsonify
-from app.forms import CreateCarForm, CreateVisitForm, UpdateCarForm
-from app.models import Car, CarOwner, CarVisit
 from flask_login import current_user, login_required
+from sqlalchemy.exc import IntegrityError
 from datetime import datetime
 from flask_paginate import Pagination, get_page_args
+from app import app, db
+from app.forms import CreateCarForm, CreateVisitForm, UpdateCarForm
+from app.models import Car, CarOwner, CarVisit, User, RepairShopImage
+from google.cloud import speech
+import os
+
 
 @app.route("/create_car", methods=["POST", "GET"])
 @login_required
@@ -157,3 +159,48 @@ def create_visit(car_id):
         return redirect(url_for('car_detail', car_id=car.id))
 
     return render_template('mechanic/create_visit.html', form=form, car=car)
+
+@app.route("/mechanic/<int:mechanic_id>")
+def mechanic_profile(mechanic_id):
+    mechanic = User.query.get_or_404(mechanic_id)
+    if not mechanic.is_mechanic():
+        flash('This user is not a mechanic.', 'danger')
+        return redirect(url_for('home'))
+    repair_shop_images = RepairShopImage.query.filter_by(user_id=mechanic.id).all()
+    return render_template('public/mechanic_profile.html', mechanic=mechanic, repair_shop_images=repair_shop_images)
+
+@app.route('/speech_to_text', methods=['POST'])
+@login_required
+def speech_to_text():
+    if not current_user.is_mechanic():
+        return jsonify({"error": "Access denied"}), 403
+
+    if 'audio' not in request.files or 'channels' not in request.form:
+        return jsonify({"error": "No audio file or channel count provided"}), 400
+
+    audio_file = request.files['audio']
+    audio_content = audio_file.read()
+    channels = int(request.form['channels'])
+
+    credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+    if not credentials_path:
+        return jsonify({"error": "Google application credentials not set"}), 500
+
+    client = speech.SpeechClient.from_service_account_file(credentials_path)
+
+    audio = speech.RecognitionAudio(content=audio_content)
+    config = speech.RecognitionConfig(
+        encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+        language_code="bg-BG",
+        audio_channel_count=channels,
+        sample_rate_hertz=48000,
+    )
+
+    try:
+        response = client.recognize(config=config, audio=audio)
+        transcript = ""
+        for result in response.results:
+            transcript += result.alternatives[0].transcript + " "
+        return jsonify({"transcript": transcript.strip()}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
