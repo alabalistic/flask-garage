@@ -1,13 +1,13 @@
 # mechanic.py
-
-from app import app, db
-from sqlalchemy.exc import IntegrityError
 from flask import render_template, url_for, flash, redirect, request, jsonify
-from app.forms import CreateCarForm, CreateVisitForm, UpdateCarForm
-from app.models import Car, CarOwner, CarVisit
 from flask_login import current_user, login_required
+from sqlalchemy.exc import IntegrityError
 from datetime import datetime
 from flask_paginate import Pagination, get_page_args
+from app import app, db
+from app.forms import CreateCarForm, CreateVisitForm, UpdateCarForm
+from app.models import Car, CarOwner, CarVisit
+
 
 @app.route("/create_car", methods=["POST", "GET"])
 @login_required
