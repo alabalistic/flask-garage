@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, FileField,  PasswordField, SubmitField, BooleanField, SelectField, TextAreaField
-from wtforms.validators import DataRequired, Length, EqualTo,  ValidationError, Optional
+from wtforms.validators import DataRequired, Length, EqualTo,  ValidationError, Optional, Email
 from app.models import User
 from app.models import User
 from flask_wtf.file import FileAllowed
@@ -40,15 +40,27 @@ def validate_registration_number(form, field):
     field.data = transformed_number.upper()
 class RegistrationForm(FlaskForm):
     username = StringField('Име', validators=[DataRequired(), Length(min=2, max=20)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
     phone_number = StringField('Телефонен номер', validators=[DataRequired(), Length(min=10, max=30)])
     password = PasswordField('Парола', validators=[DataRequired()])
     confirm_password = PasswordField('Повтори паролата', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Регистрация')
 
+    def validate_username(self, username):
+        user = User.query.filter_by(username=username.data).first()
+        if user:
+            raise ValidationError('Името е заето, моля изберете друго')
+
+    def validate_email(self, email):
+        user = User.query.filter_by(email=email.data).first()
+        if user:
+            raise ValidationError('Email вече е регистриран, моля изберете друг')
+
     def validate_phone_number(self, phone_number):
         user = User.query.filter_by(phone_number=phone_number.data).first()
         if user:
             raise ValidationError('Този номер е зает опитайте с друг')
+
 
 
 class LoginForm(FlaskForm):
@@ -79,21 +91,40 @@ class CreateVisitForm(FlaskForm):
 
 class AdminCreateUserForm(FlaskForm):
     username = StringField('Име', validators=[DataRequired(), Length(min=2, max=20)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
     phone_number = StringField('Телефонен номер', validators=[DataRequired(), Length(min=10, max=30)])
     password = PasswordField('Парола', validators=[DataRequired()])
     confirm_password = PasswordField('Подтвърди паролата', validators=[DataRequired(), EqualTo('password')])
     role = SelectField('Роля', choices=[], coerce=int, validators=[DataRequired()])
     submit = SubmitField('Запази')
 
+    def validate_username(self, username):
+        user = User.query.filter_by(username=username.data).first()
+        if user:
+            raise ValidationError('Името е заето, моля изберете друго')
+
+    def validate_email(self, email):
+        user = User.query.filter_by(email=email.data).first()
+        if user:
+            raise ValidationError('Email вече е регистриран, моля изберете друг')
+
+    def validate_phone_number(self, phone_number):
+        user = User.query.filter_by(phone_number=phone_number.data).first()
+        if user:
+            raise ValidationError('Този номер е зает опитайте с друг')
+
+
 class AdminEditUserForm(FlaskForm):
     username = StringField('Име', validators=[DataRequired(), Length(min=2, max=20)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
     phone_number = StringField('Телефонен номер', validators=[DataRequired(), Length(min=10, max=15)])
     role = SelectField('Роля', coerce=int, validators=[DataRequired()])
     submit = SubmitField('Запази')
 
-    def __init__(self, original_username=None, original_phone_number=None, *args, **kwargs):
+    def __init__(self, original_username=None, original_email=None, original_phone_number=None, *args, **kwargs):
         super(AdminEditUserForm, self).__init__(*args, **kwargs)
         self.original_username = original_username
+        self.original_email = original_email
         self.original_phone_number = original_phone_number
 
     def validate_username(self, username):
@@ -102,14 +133,22 @@ class AdminEditUserForm(FlaskForm):
             if user:
                 raise ValidationError('Името е заето, моля изберете друго')
 
+    def validate_email(self, email):
+        if email.data != self.original_email:
+            user = User.query.filter_by(email=email.data).first()
+            if user:
+                raise ValidationError('Email вече е регистриран, моля изберете друг')
+
     def validate_phone_number(self, phone_number):
         if phone_number.data != self.original_phone_number:
             user = User.query.filter_by(phone_number=phone_number.data).first()
             if user:
                 raise ValidationError('Вече съществува потребител с този телефонен номер')
+
             
 class UpdateAccountForm(FlaskForm):
     username = StringField('Потребителско име', validators=[DataRequired(), Length(min=2, max=20)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
     phone_number = StringField('Телефонен номер', validators=[DataRequired(), Length(min=10, max=30)])
     picture = FileField('Избери профилна снимка', validators=[FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')])
     biography = TextAreaField('Биография', validators=[Optional(), Length(max=500)])
@@ -118,10 +157,23 @@ class UpdateAccountForm(FlaskForm):
     confirm = PasswordField('Повтори паролата')
     submit = SubmitField('Запази промените')
 
+    def validate_username(self, username):
+        if username.data != current_user.username:
+            user = User.query.filter_by(username=username.data).first()
+            if user:
+                raise ValidationError('Името е заето, моля изберете друго')
+
+    def validate_email(self, email):
+        if email.data != current_user.email:
+            user = User.query.filter_by(email=email.data).first()
+            if user:
+                raise ValidationError('Email вече е регистриран, моля изберете друг')
+
     def validate_phone_number(self, phone_number):
-        user = User.query.filter_by(phone_number=phone_number.data).first()
-        if user and user.id != current_user.id:
-            raise ValidationError('Този номер е зает. опитайте с друг или Влезте в своя профил.')
+        if phone_number.data != current_user.phone_number:
+            user = User.query.filter_by(phone_number=phone_number.data).first()
+            if user:
+                raise ValidationError('Този номер е зает. опитайте с друг или Влезте в своя профил.')
 
     def validate_picture(form, field):
         if field.data:

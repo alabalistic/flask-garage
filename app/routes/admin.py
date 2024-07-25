@@ -50,11 +50,10 @@ def create_user():
             return redirect(url_for('create_user'))
 
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        user = User(username=form.username.data, phone_number=form.phone_number.data, password=hashed_password)
+        user = User(username=form.username.data, email=form.email.data, phone_number=form.phone_number.data, password=hashed_password)
         db.session.add(user)
         db.session.flush()
         
-
         role = Role.query.get(form.role.data)
         if role:
             user.roles.append(role)
@@ -64,7 +63,6 @@ def create_user():
         app.logger.info(f'{current_user.username}  created user {user.phone_number}')
         return redirect(url_for('admin_users'))
         
-
     return render_template('admin/create_user.html', form=form)
 
 @app.route("/search_users", methods=['GET'])
@@ -91,11 +89,12 @@ def edit_user(user_id):
         return redirect(url_for('home'))
     
     user = User.query.get_or_404(user_id)
-    form = AdminEditUserForm(original_username=user.username, original_phone_number=user.phone_number)
+    form = AdminEditUserForm(original_username=user.username, original_email=user.email, original_phone_number=user.phone_number)
     form.role.choices = [(role.id, role.name) for role in Role.query.all()]
 
     if form.validate_on_submit():
         user.username = form.username.data
+        user.email = form.email.data
         user.phone_number = form.phone_number.data
 
         user.roles = []
@@ -109,6 +108,7 @@ def edit_user(user_id):
         return redirect(url_for('admin_users'))
     elif request.method == 'GET':
         form.username.data = user.username
+        form.email.data = user.email
         form.phone_number.data = user.phone_number
         form.role.data = user.roles[0].id if user.roles else ''
     
@@ -134,11 +134,11 @@ def delete_user(user_id):
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
-
+    
     form = RegistrationForm()
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        user = User(username=form.username.data, phone_number=form.phone_number.data, password=hashed_password)
+        user = User(username=form.username.data, email=form.email.data, phone_number=form.phone_number.data, password=hashed_password)
         
         role = Role.query.filter_by(name='frontend_user').first()
         if role:
@@ -152,6 +152,7 @@ def register():
         return redirect(url_for('login'))
         
     return render_template('admin/register.html', title='Register', form=form)
+
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
@@ -217,6 +218,7 @@ def account():
     if form.validate_on_submit():
         try:
             user.username = form.username.data
+            user.email = form.email.data
             user.phone_number = form.phone_number.data
             user.biography = form.biography.data
             user.expertise = form.expertise.data
@@ -234,6 +236,7 @@ def account():
 
     elif request.method == 'GET':
         form.username.data = user.username
+        form.email.data = user.email
         form.phone_number.data = user.phone_number
         form.biography.data = user.biography
         form.expertise.data = user.expertise

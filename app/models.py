@@ -6,9 +6,12 @@ from flask_login import UserMixin, AnonymousUserMixin
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+# models.py
+
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), nullable=False)
+    username = db.Column(db.String(100), unique=True, nullable=False)  # Ensure uniqueness
+    email = db.Column(db.String(120), unique=True, nullable=False)  # Add email field
     phone_number = db.Column(db.String(30), unique=True, nullable=False)
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
     biography = db.Column(db.Text, nullable=True)
@@ -21,7 +24,8 @@ class User(db.Model, UserMixin):
     comments = db.relationship('Comment', backref='author', lazy=True, cascade='all, delete-orphan')
     
     def __repr__(self):
-        return f"User('{self.username}', '{self.phone_number}')"
+        return f"User('{self.username}', '{self.email}', '{self.phone_number}')"
+
 
     def has_role(self, role_name):
         return any(role.name == role_name for role in self.roles)
