@@ -5,6 +5,7 @@ from app.models import User
 from app.models import User
 from flask_wtf.file import FileAllowed
 from flask_login import current_user
+from flask_wtf.file import FileAllowed
 
 CYRILLIC_TO_LATIN_MAP = {
     'А': 'A', 
@@ -110,7 +111,7 @@ class AdminEditUserForm(FlaskForm):
 class UpdateAccountForm(FlaskForm):
     username = StringField('Потребителско име', validators=[DataRequired(), Length(min=2, max=20)])
     phone_number = StringField('Телефонен номер', validators=[DataRequired(), Length(min=10, max=30)])
-    picture = FileField('Качи профилна снимка', validators=[FileAllowed(['jpg', 'png'])])
+    picture = FileField('Избери профилна снимка', validators=[FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')])
     biography = TextAreaField('Биография', validators=[Optional(), Length(max=500)])
     expertise = StringField('Експертиза', validators=[Optional(), Length(max=200)])
     password = PasswordField('Нова парола', validators=[Optional(), Length(min=6, max=60), EqualTo('confirm', message='Passwords must match')])
@@ -121,6 +122,12 @@ class UpdateAccountForm(FlaskForm):
         user = User.query.filter_by(phone_number=phone_number.data).first()
         if user and user.id != current_user.id:
             raise ValidationError('Този номер е зает. опитайте с друг или Влезте в своя профил.')
+
+    def validate_picture(form, field):
+        if field.data:
+            filename = field.data.filename
+            if not (filename.endswith('.jpg') or filename.endswith('.jpeg') or filename.endswith('.png')):
+                raise ValidationError('Unsupported file type. Please upload a .jpg, .jpeg, or .png file.')
 
 class PostForm(FlaskForm):
     content = TextAreaField('Content', validators=[DataRequired()])
@@ -140,8 +147,8 @@ class MechanicProfileForm(FlaskForm):
     phone_number = StringField('Телефонен номер', validators=[DataRequired(), Length(min=10, max=30)])
     biography = TextAreaField('Биография', validators=[Optional(), Length(max=500)])
     expertise = StringField('Експертиза', validators=[Optional(), Length(max=200)])
-    profile_picture = FileField('Качи профилна снимка', validators=[FileAllowed(['jpg', 'png'])])
-    repair_shop_pictures = FileField('Качи снимки на сервиза', validators=[FileAllowed(['jpg', 'png'])], render_kw={"multiple": True})
+    profile_picture = FileField('Качи профилна снимка', validators=[FileAllowed(['jpg', 'jpeg', 'png'])])
+    repair_shop_pictures = FileField('Качи снимки на сервиза', validators=[FileAllowed(['jpg', 'jpeg', 'png'])], render_kw={"multiple": True})
     submit = SubmitField('Запази промените')
 
     def validate_phone_number(self, phone_number):

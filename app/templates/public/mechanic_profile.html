@@ -7,7 +7,7 @@
     <div class="profile-header text-center mb-4">
         <img class="rounded-circle profile-img" src="{{ url_for('static', filename='profile_pics/' + mechanic.image_file) }}" alt="Mechanic profile picture">
         <h2>{{ mechanic.username }}</h2>
-        <p class="phone-number"><i class="fas fa-phone"></i> Свържи се с мен на тел:{{ mechanic.phone_number }}</p>
+        <p class="phone-number"><i class="fas fa-phone"></i> Свържи се с мен на тел: {{ mechanic.phone_number }}</p>
         <p class="organization"><i class="fas fa-building"></i> {{ mechanic.organization }}</p>
     </div>
 
@@ -80,9 +80,11 @@
     }
     .carousel-img {
         width: 100%;
+        max-width: 600px;
         height: auto;
         object-fit: cover;
         object-position: center;
+        margin: 0 auto; /* Center the image */
     }
     @media (max-width: 576px) {
         .carousel-img {

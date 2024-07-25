@@ -9,7 +9,16 @@ import secrets
 from PIL import Image
 from flask import current_app
 
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
 def save_picture(form_picture, folder='profile_pics'):
+    if not allowed_file(form_picture.filename):
+        raise ValueError("Unsupported file type. Please upload a .jpg, .jpeg, or .png file.")
+
     random_hex = secrets.token_hex(8)
     _, f_ext = os.path.splitext(form_picture.filename)
     picture_fn = random_hex + f_ext
@@ -21,7 +30,6 @@ def save_picture(form_picture, folder='profile_pics'):
     i.save(picture_path)
 
     return picture_fn
-
 
 
 
@@ -206,19 +214,22 @@ def account():
     form = UpdateAccountForm()
 
     if form.validate_on_submit():
-        user.username = form.username.data
-        user.phone_number = form.phone_number.data
-        user.biography = form.biography.data
-        user.expertise = form.expertise.data
-        if form.picture.data:
-            picture_file = save_picture(form.picture.data)  # Implement the save_picture function to handle file saving
-            user.image_file = picture_file
-        if form.password.data:  # Only update password if it is provided
-            hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-            user.password = hashed_password
-        db.session.commit()
-        flash('Your account has been updated!', 'success')
-        return redirect(url_for('account'))
+        try:
+            user.username = form.username.data
+            user.phone_number = form.phone_number.data
+            user.biography = form.biography.data
+            user.expertise = form.expertise.data
+            if form.picture.data:
+                picture_file = save_picture(form.picture.data, folder='profile_pics')
+                user.image_file = picture_file
+            if form.password.data:
+                hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+                user.password = hashed_password
+            db.session.commit()
+            flash('Your account has been updated!', 'success')
+            return redirect(url_for('account'))
+        except ValueError as e:
+            flash(str(e), 'danger')
 
     elif request.method == 'GET':
         form.username.data = user.username
@@ -281,24 +292,28 @@ def update_mechanic_profile():
 
     form = MechanicProfileForm()
     if form.validate_on_submit():
-        current_user.username = form.username.data
-        current_user.phone_number = form.phone_number.data
-        current_user.biography = form.biography.data
-        current_user.expertise = form.expertise.data
+        try:
+            current_user.username = form.username.data
+            current_user.phone_number = form.phone_number.data
+            current_user.biography = form.biography.data
+            current_user.expertise = form.expertise.data
 
-        if form.profile_picture.data:
-            picture_file = save_picture(form.profile_picture.data, folder='profile_pics')
-            current_user.image_file = picture_file
+            if form.profile_picture.data:
+                picture_file = save_picture(form.profile_picture.data, folder='profile_pics')
+                current_user.image_file = picture_file
 
-        if form.repair_shop_pictures.data:
-            for picture in request.files.getlist(form.repair_shop_pictures.name):
-                picture_file = save_picture(picture, folder='repair_shop_pics')
-                repair_shop_image = RepairShopImage(image_file=picture_file, user_id=current_user.id)
-                db.session.add(repair_shop_image)
+            if form.repair_shop_pictures.data:
+                for picture in request.files.getlist(form.repair_shop_pictures.name):
+                    picture_file = save_picture(picture, folder='repair_shop_pics')
+                    repair_shop_image = RepairShopImage(image_file=picture_file, user_id=current_user.id)
+                    db.session.add(repair_shop_image)
 
-        db.session.commit()
-        flash('Профилът ви е актуализиран!', 'success')
-        return redirect(url_for('mechanic_profile', mechanic_id=current_user.id))
+            db.session.commit()
+            flash('Профилът ви е актуализиран!', 'success')
+            return redirect(url_for('mechanic_profile', mechanic_id=current_user.id))
+        except ValueError as e:
+            flash(str(e), 'danger')
+
     elif request.method == 'GET':
         form.username.data = current_user.username
         form.phone_number.data = current_user.phone_number

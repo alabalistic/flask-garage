@@ -23,11 +23,11 @@
         </div>
         <div class="form-group">
             {{ form.profile_picture.label(class="form-label") }}
-            {{ form.profile_picture(class="form-control-file") }}
+            {{ form.profile_picture(class="form-control-file", label="Избери файл") }}
         </div>
         <div class="form-group">
             {{ form.repair_shop_pictures.label(class="form-label") }}
-            {{ form.repair_shop_pictures(class="form-control-file") }}
+            {{ form.repair_shop_pictures(class="form-control-file", label="Избери файл") }}
         </div>
         <button type="submit" class="btn btn-primary">{{ form.submit.label }}</button>
     </form>
