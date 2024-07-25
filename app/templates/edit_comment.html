@@ -1,0 +1,17 @@
+<!-- edit_comment.html -->
+{% extends "layout.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="content-section">
+        <h2>Edit Comment</h2>
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.content.label(class="form-control-label") }}
+                {{ form.content(class="form-control") }}
+            </div>
+            <button type="submit" class="btn btn-primary">Update Comment</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

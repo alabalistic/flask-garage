@@ -122,11 +122,12 @@ def delete_user(user_id):
         return redirect(url_for('home'))
     
     user = User.query.get_or_404(user_id)
-    user.visibility = False
+    db.session.delete(user)
     db.session.commit()
     flash(f'User {user.username} е изтрит успешно!', 'success')
     app.logger.info(f'{current_user.username}  deleted user {user.phone_number}')
     return redirect(url_for('admin_users'))
+
 
 
 @app.route("/register", methods=['GET', 'POST'])
@@ -239,11 +240,6 @@ def account():
 
     image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
     return render_template('admin/account.html', title='Account', form=form, image_file=image_file)
-
-
-
-
-
 
 @app.route("/restore_car_visibility/<int:car_id>", methods=["POST"])
 @login_required

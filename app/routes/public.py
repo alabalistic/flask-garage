@@ -2,8 +2,6 @@
 
 from flask import render_template, url_for, flash, redirect, request, jsonify
 from flask_login import current_user, login_required
-from google.cloud import speech
-import os
 from app import app, db
 from app.forms import PostForm, CommentForm
 from app.models import Post, Comment, Car, User, Role, RepairShopImage
@@ -81,14 +79,6 @@ def get_post_comments(post_id):
     } for comment in comments]
     return jsonify({'comments': comments_data})
 
-@app.route("/mechanic/<int:mechanic_id>")
-def mechanic_profile(mechanic_id):
-    mechanic = User.query.get_or_404(mechanic_id)
-    if not mechanic.is_mechanic():
-        flash('This user is not a mechanic.', 'danger')
-        return redirect(url_for('home'))
-    repair_shop_images = RepairShopImage.query.filter_by(user_id=mechanic.id).all()
-    return render_template('public/mechanic_profile.html', mechanic=mechanic, repair_shop_images=repair_shop_images)
 
 
 @app.route("/search", methods=['GET'])
@@ -106,39 +96,69 @@ def search():
     
     return render_template('search_results.html', posts=posts, mechanics=mechanics, comments=comments, query=query)
 
-@app.route('/speech_to_text', methods=['POST'])
+@app.route("/edit_comment/<int:comment_id>", methods=['GET', 'POST'])
 @login_required
-def speech_to_text():
-    if not current_user.is_mechanic():
-        return jsonify({"error": "Access denied"}), 403
+def edit_comment(comment_id):
+    comment = Comment.query.get_or_404(comment_id)
+    if comment.user_id != current_user.id:
+        flash('You do not have permission to edit this comment.', 'danger')
+        return redirect(url_for('home'))
 
-    if 'audio' not in request.files or 'channels' not in request.form:
-        return jsonify({"error": "No audio file or channel count provided"}), 400
+    form = CommentForm()
+    if form.validate_on_submit():
+        comment.content = form.content.data
+        db.session.commit()
+        flash('Your comment has been updated!', 'success')
+        return redirect(url_for('post', post_id=comment.post_id))
+    elif request.method == 'GET':
+        form.content.data = comment.content
 
-    audio_file = request.files['audio']
-    audio_content = audio_file.read()
-    channels = int(request.form['channels'])
+    return render_template('edit_comment.html', form=form, comment=comment)
 
-    credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
-    if not credentials_path:
-        return jsonify({"error": "Google application credentials not set"}), 500
+@app.route("/delete_comment/<int:comment_id>", methods=['POST'])
+@login_required
+def delete_comment(comment_id):
+    comment = Comment.query.get_or_404(comment_id)
+    if comment.user_id != current_user.id:
+        flash('You do not have permission to delete this comment.', 'danger')
+        return redirect(url_for('home'))
 
-    client = speech.SpeechClient.from_service_account_file(credentials_path)
+    post_id = comment.post_id
+    db.session.delete(comment)
+    db.session.commit()
+    flash('Your comment has been deleted!', 'success')
+    return redirect(url_for('post', post_id=post_id))
 
-    audio = speech.RecognitionAudio(content=audio_content)
-    config = speech.RecognitionConfig(
-        encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-        language_code="bg-BG",
-        audio_channel_count=channels,
-        sample_rate_hertz=48000,
-    )
+# public.py
 
-    try:
-        response = client.recognize(config=config, audio=audio)
-        transcript = ""
-        for result in response.results:
-            transcript += result.alternatives[0].transcript + " "
-        return jsonify({"transcript": transcript.strip()}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    
+@app.route("/edit_post/<int:post_id>", methods=['GET', 'POST'])
+@login_required
+def edit_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.author_id != current_user.id:
+        flash('You do not have permission to edit this post.', 'danger')
+        return redirect(url_for('home'))
+
+    form = PostForm()
+    if form.validate_on_submit():
+        post.content = form.content.data
+        db.session.commit()
+        flash('Your post has been updated!', 'success')
+        return redirect(url_for('post', post_id=post.id))
+    elif request.method == 'GET':
+        form.content.data = post.content
+
+    return render_template('edit_post.html', form=form, post=post)
+
+@app.route("/delete_post/<int:post_id>", methods=['POST'])
+@login_required
+def delete_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.author_id != current_user.id:
+        flash('You do not have permission to delete this post.', 'danger')
+        return redirect(url_for('home'))
+
+    db.session.delete(post)
+    db.session.commit()
+    flash('Your post has been deleted!', 'success')
+    return redirect(url_for('home'))

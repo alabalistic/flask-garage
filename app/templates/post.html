@@ -1,3 +1,4 @@
+<!-- post.html -->
 {% extends "layout.html" %}
 {% block content %}
 <article class="media content-section">
@@ -5,6 +6,12 @@
         <div class="article-metadata">
             <h2>{{ post.author.username }}</h2>
             <small class="text-muted">{{ post.date_posted.strftime('%Y-%m-%d %H:%M') }}</small>
+            {% if current_user.is_authenticated and current_user.id == post.author_id %}
+                <a href="{{ url_for('edit_post', post_id=post.id) }}" class="btn btn-outline-secondary btn-sm">Edit</a>
+                <form action="{{ url_for('delete_post', post_id=post.id) }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                </form>
+            {% endif %}
         </div>
         <p class="article-content">{{ post.content }}</p>
     </div>
@@ -15,11 +22,17 @@
     <div class="media-body">
         <p class="article-content">{{ comment.content }}</p>
         <small class="text-muted">{{ comment.date_posted.strftime('%Y-%m-%d %H:%M') }}</small>
+        {% if comment.user_id == current_user.id %}
+            <a href="{{ url_for('edit_comment', comment_id=comment.id) }}" class="btn btn-outline-secondary btn-sm">Edit</a>
+            <form action="{{ url_for('delete_comment', comment_id=comment.id) }}" method="POST" style="display:inline;">
+                <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+            </form>
+        {% endif %}
     </div>
 </article>
 {% endfor %}
 
-{% if current_user.is_authenticated and (current_user.id == post.user_id or current_user.is_mechanic()) %}
+{% if current_user.is_authenticated %}
 <div class="content-section">
     <form method="POST" action="">
         {{ form.hidden_tag() }}
