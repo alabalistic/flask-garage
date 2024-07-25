@@ -111,7 +111,7 @@ class AdminEditUserForm(FlaskForm):
 class UpdateAccountForm(FlaskForm):
     username = StringField('Потребителско име', validators=[DataRequired(), Length(min=2, max=20)])
     phone_number = StringField('Телефонен номер', validators=[DataRequired(), Length(min=10, max=30)])
-    picture = FileField('Качи профилна снимка', validators=[FileAllowed(['jpg', 'jpeg', 'png'])])
+    picture = FileField('Избери профилна снимка', validators=[FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')])
     biography = TextAreaField('Биография', validators=[Optional(), Length(max=500)])
     expertise = StringField('Експертиза', validators=[Optional(), Length(max=200)])
     password = PasswordField('Нова парола', validators=[Optional(), Length(min=6, max=60), EqualTo('confirm', message='Passwords must match')])
@@ -122,6 +122,12 @@ class UpdateAccountForm(FlaskForm):
         user = User.query.filter_by(phone_number=phone_number.data).first()
         if user and user.id != current_user.id:
             raise ValidationError('Този номер е зает. опитайте с друг или Влезте в своя профил.')
+
+    def validate_picture(form, field):
+        if field.data:
+            filename = field.data.filename
+            if not (filename.endswith('.jpg') or filename.endswith('.jpeg') or filename.endswith('.png')):
+                raise ValidationError('Unsupported file type. Please upload a .jpg, .jpeg, or .png file.')
 
 class PostForm(FlaskForm):
     content = TextAreaField('Content', validators=[DataRequired()])

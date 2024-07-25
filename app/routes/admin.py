@@ -17,7 +17,7 @@ def allowed_file(filename):
 
 def save_picture(form_picture, folder='profile_pics'):
     if not allowed_file(form_picture.filename):
-        raise ValueError("Unsupported file type")
+        raise ValueError("Unsupported file type. Please upload a .jpg, .jpeg, or .png file.")
 
     random_hex = secrets.token_hex(8)
     _, f_ext = os.path.splitext(form_picture.filename)
@@ -30,7 +30,6 @@ def save_picture(form_picture, folder='profile_pics'):
     i.save(picture_path)
 
     return picture_fn
-
 
 
 
@@ -240,7 +239,6 @@ def account():
 
     image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
     return render_template('admin/account.html', title='Account', form=form, image_file=image_file)
-
 
 
 
