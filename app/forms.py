@@ -5,6 +5,7 @@ from app.models import User
 from app.models import User
 from flask_wtf.file import FileAllowed
 from flask_login import current_user
+from flask_wtf.file import FileAllowed
 
 CYRILLIC_TO_LATIN_MAP = {
     'А': 'A', 
@@ -110,7 +111,7 @@ class AdminEditUserForm(FlaskForm):
 class UpdateAccountForm(FlaskForm):
     username = StringField('Потребителско име', validators=[DataRequired(), Length(min=2, max=20)])
     phone_number = StringField('Телефонен номер', validators=[DataRequired(), Length(min=10, max=30)])
-    picture = FileField('Качи профилна снимка', validators=[FileAllowed(['jpg', 'png'])])
+    picture = FileField('Качи профилна снимка', validators=[FileAllowed(['jpg', 'jpeg', 'png'])])
     biography = TextAreaField('Биография', validators=[Optional(), Length(max=500)])
     expertise = StringField('Експертиза', validators=[Optional(), Length(max=200)])
     password = PasswordField('Нова парола', validators=[Optional(), Length(min=6, max=60), EqualTo('confirm', message='Passwords must match')])
@@ -140,8 +141,8 @@ class MechanicProfileForm(FlaskForm):
     phone_number = StringField('Телефонен номер', validators=[DataRequired(), Length(min=10, max=30)])
     biography = TextAreaField('Биография', validators=[Optional(), Length(max=500)])
     expertise = StringField('Експертиза', validators=[Optional(), Length(max=200)])
-    profile_picture = FileField('Качи профилна снимка', validators=[FileAllowed(['jpg', 'png'])])
-    repair_shop_pictures = FileField('Качи снимки на сервиза', validators=[FileAllowed(['jpg', 'png'])], render_kw={"multiple": True})
+    profile_picture = FileField('Качи профилна снимка', validators=[FileAllowed(['jpg', 'jpeg', 'png'])])
+    repair_shop_pictures = FileField('Качи снимки на сервиза', validators=[FileAllowed(['jpg', 'jpeg', 'png'])], render_kw={"multiple": True})
     submit = SubmitField('Запази промените')
 
     def validate_phone_number(self, phone_number):

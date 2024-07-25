@@ -26,9 +26,10 @@
                             {% endif %}
                             {% if current_user.is_mechanic() %}
                                 <a class="nav-item nav-link" href="{{ url_for('mechanic_dashboard') }}">Клиенти</a>
-                                <a class="nav-item nav-link" href="{{ url_for('update_mechanic_profile') }}">profil</a>
+                                <a class="nav-item nav-link" href="{{ url_for('update_mechanic_profile') }}">Профил</a>
+                            {% elif not current_user.is_mechanic() %}
+                                <a class="nav-item nav-link" href="{{ url_for('update_profile') }}">Профил</a>
                             {% endif %}
-                            <a class="nav-item nav-link" href="{{ url_for('account') }}">Моят профил</a>
                         {% endif %}
                     </div>
                     <div class="navbar-nav ml-auto">
