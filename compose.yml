@@ -1,4 +1,4 @@
-services:
+
   web:
     image: alabalistic/flask-garage:latest
     ports:
@@ -8,9 +8,9 @@ services:
       - FLASK_APP=run.py
       - GOOGLE_APPLICATION_CREDENTIALS=/app/instance/google-speech-to-text-key.json
     volumes:
-      - ./instance:/app/instance  
-      - ./app/static/profile_pics:/app/app/static/profile_pics
-      - ./app/static/repair_shop_pics:/app/app/static/repair_shop_pics  # Added volume for repair shop pictures
+      - ./instance:/app/instance
+      - ./static/profile_pics:/app/app/static/profile_pics
+      - ./static/repair_shop_pics:/app/app/static/repair_shop_pics
       - ./logs:/app/logs
     env_file:
       - .env
