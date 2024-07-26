@@ -348,3 +348,8 @@ def update_mechanic_profile():
         form.expertise.data = current_user.expertise
 
     return render_template('update_mechanic_profile.html', title='Актуализиране на профила', form=form)
+
+@app.route('/google_login')
+def google_login():
+    redirect_uri = url_for('auth_callback', _external=True)
+    return google.authorize_redirect(redirect_uri)
