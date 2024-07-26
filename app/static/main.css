@@ -180,3 +180,8 @@ h1, h2, h3, h4, h5, h6 {
 .article-metadata a:hover {
   color: #2c3e50;
 }
+.navbar-brand img {
+  height: 60px; /* Adjust height as needed */
+  width: auto;
+  padding: 0px 0; /* Adjust padding if necessary */
+}
