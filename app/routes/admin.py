@@ -178,14 +178,14 @@ def auth_callback():
             user = User(
                 username=user_info['name'],
                 email=user_info['email'],
-                phone_number=None,  # Initially set to None
+                phone_number='0000000000',  # Temporary default phone number
                 password=os.urandom(12).hex()  # Default random password
             )
             db.session.add(user)
             db.session.commit()
         
         login_user(user)
-        if not user.phone_number:
+        if user.phone_number == '0000000000':
             return redirect(url_for('update_phone_number'))
         return redirect(url_for('home'))
     
@@ -203,7 +203,7 @@ def update_phone_number():
         flash('Your phone number has been updated!', 'success')
         return redirect(url_for('home'))
     
-    return render_template('update_phone_number.html')
+    return render_template('update_phone_number.html')  
 
 
 @app.route("/admin_dashboard")
