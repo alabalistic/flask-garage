@@ -1,7 +1,7 @@
 from flask import render_template, url_for, flash, redirect, request
 from flask_login import login_user, current_user, logout_user, login_required
 from app import app, bcrypt, db
-from app.forms import RegistrationForm, LoginForm, MechanicProfileForm, AdminCreateUserForm, AdminEditUserForm, UpdateAccountForm
+from app.forms import MechanicProfileForm, AdminCreateUserForm, AdminEditUserForm, UpdateAccountForm
 from app.models import User, Car, Role, RepairShopImage
 from flask_paginate import Pagination, get_page_args
 import os
@@ -45,9 +45,9 @@ def create_user():
     form.role.choices = [(role.id, role.name) for role in Role.query.all()]
 
     if form.validate_on_submit():
-        user = User.query.filter_by(phone_number=form.phone_number.data).first()
+        user = User.query.filter_by(email=form.email.data).first()
         if user:
-            flash(f'Потребител с телефонен номер:  {form.phone_number.data} е вече регистриран.', 'danger')
+            flash(f'Потребител с Имайл:  {form.email.data} е вече регистриран.', 'danger')
             return redirect(url_for('create_user'))
 
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
@@ -130,30 +130,6 @@ def delete_user(user_id):
     return redirect(url_for('admin_users'))
 
 from app import oauth, google
-
-# @app.route("/register", methods=['GET', 'POST'])
-# def register():
-#     if current_user.is_authenticated:
-#         return redirect(url_for('home'))
-    
-#     form = RegistrationForm()
-#     if form.validate_on_submit():
-#         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-#         user = User(username=form.username.data, email=form.email.data, phone_number=form.phone_number.data, password=hashed_password)
-        
-#         role = Role.query.filter_by(name='frontend_user').first()
-#         if role:
-#             if role not in user.roles:
-#                 user.roles.append(role)  
-#             db.session.add(user)
-#             db.session.commit()
-        
-#         flash(f'Регистрацията успешна за {form.username.data}!', 'success')
-#         app.logger.info(f'New user registered with {user.phone_number}')
-#         return redirect(url_for('login'))
-        
-#     return render_template('admin/register.html', title='Register', form=form)
-
 
 @app.route('/login')
 def login():
