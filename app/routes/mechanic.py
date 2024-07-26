@@ -56,7 +56,7 @@ def create_car():
             db.session.rollback()
             flash('An unexpected error occurred. Please try again.', 'danger')
 
-    return render_template('mechanic/create_car.html', form=form)
+    return render_template('create_car.html', form=form)
 
 @app.route('/car/<int:car_id>', methods=['GET'])
 @login_required
@@ -79,7 +79,7 @@ def car_detail(car_id):
     
     pagination = Pagination(page=page, per_page=per_page, total=total, css_framework='bootstrap4')
 
-    return render_template('mechanic/car_detail.html', car=car, visits=visits, pagination=pagination, search_query=search_query)
+    return render_template('car_detail.html', car=car, visits=visits, pagination=pagination, search_query=search_query)
 
 @app.route('/mechanic_dashboard', methods=['GET', 'POST'])
 @login_required
@@ -103,7 +103,7 @@ def mechanic_dashboard():
     
     pagination = Pagination(page=page, per_page=per_page, total=total, css_framework='bootstrap4')
 
-    return render_template('mechanic/mechanic_dashboard.html', cars=cars, pagination=pagination)
+    return render_template('mechanic_dashboard.html', cars=cars, pagination=pagination)
 
 @app.route("/delete_car/<int:car_id>", methods=["POST"])
 @login_required
@@ -138,7 +138,7 @@ def update_car(car_id):
         form.vin_number.data = car.vin_number
         form.additional_info.data = car.additional_info
     
-    return render_template('mechanic/update_car.html', form=form, car=car)
+    return render_template('update_car.html', form=form, car=car)
 
 @app.route("/create_visit/<int:car_id>", methods=["POST", "GET"])
 @login_required
@@ -158,7 +158,7 @@ def create_visit(car_id):
 
         return redirect(url_for('car_detail', car_id=car.id))
 
-    return render_template('mechanic/create_visit.html', form=form, car=car)
+    return render_template('create_visit.html', form=form, car=car)
 
 @app.route("/mechanic/<int:mechanic_id>")
 def mechanic_profile(mechanic_id):
@@ -167,7 +167,7 @@ def mechanic_profile(mechanic_id):
         flash('This user is not a mechanic.', 'danger')
         return redirect(url_for('home'))
     repair_shop_images = RepairShopImage.query.filter_by(user_id=mechanic.id).all()
-    return render_template('public/mechanic_profile.html', mechanic=mechanic, repair_shop_images=repair_shop_images)
+    return render_template('mechanic_profile.html', mechanic=mechanic, repair_shop_images=repair_shop_images)
 
 @app.route('/speech_to_text', methods=['POST'])
 @login_required

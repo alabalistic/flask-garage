@@ -65,7 +65,7 @@ def create_user():
         app.logger.info(f'{current_user.username}  created user {user.email}')
         return redirect(url_for('admin_users'))
         
-    return render_template('admin/create_user.html', form=form)
+    return render_template('create_user.html', form=form)
 
 
 @app.route("/search_users", methods=['GET'])
@@ -82,7 +82,7 @@ def search_users():
         users = User.query.all()
 
     form = AdminCreateUserForm()
-    return render_template('admin/admin_users.html', form=form, users=users)
+    return render_template('admin_users.html', form=form, users=users)
 
 
 @app.route("/edit_user/<int:user_id>", methods=['GET', 'POST'])
@@ -114,7 +114,7 @@ def edit_user(user_id):
         form.email.data = user.email
         form.role.data = user.roles[0].id if user.roles else ''
     
-    return render_template('admin/edit_user.html', form=form, user=user)
+    return render_template('edit_user.html', form=form, user=user)
 
 @app.route("/delete_user/<int:user_id>", methods=['POST'])
 @login_required
@@ -207,7 +207,7 @@ def admin_dashboard():
     if not current_user.is_admin():
         flash('Достъп отказан!', 'danger')
         return redirect(url_for('home'))
-    return render_template('admin/admin_dashboard.html')
+    return render_template('admin_dashboard.html')
 
 @app.route('/admin_users', methods=['GET'])
 @login_required
@@ -229,7 +229,7 @@ def admin_users():
 
     pagination = Pagination(page=page, per_page=per_page, total=total, css_framework='bootstrap4')
 
-    return render_template('admin/admin_users.html', users=users, pagination=pagination)
+    return render_template('admin_users.html', users=users, pagination=pagination)
 
 
 @app.route('/logout')
@@ -270,7 +270,7 @@ def account():
         form.expertise.data = user.expertise
 
     image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
-    return render_template('admin/account.html', title='Account', form=form, image_file=image_file)
+    return render_template('account.html', title='Account', form=form, image_file=image_file)
 
 @app.route("/restore_car_visibility/<int:car_id>", methods=["POST"])
 @login_required
@@ -308,7 +308,7 @@ def admin_cars():
     
     pagination = Pagination(page=page, per_page=per_page, total=total, css_framework='bootstrap4')
 
-    return render_template('admin/admin_cars.html', cars=cars, pagination=pagination)
+    return render_template('admin_cars.html', cars=cars, pagination=pagination)
 
 @app.route("/mechanic_profile/update", methods=['GET', 'POST'])
 @login_required
@@ -347,4 +347,4 @@ def update_mechanic_profile():
         form.biography.data = current_user.biography
         form.expertise.data = current_user.expertise
 
-    return render_template('public/update_mechanic_profile.html', title='Актуализиране на профила', form=form)
+    return render_template('update_mechanic_profile.html', title='Актуализиране на профила', form=form)

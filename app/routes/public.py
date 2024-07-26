@@ -17,15 +17,15 @@ def inject_mechanics():
 def home():
     posts = Post.query.order_by(Post.date_posted.desc()).limit(5).all()
     form = PostForm()
-    return render_template('public/home.html', posts=posts, form=form)
+    return render_template('home.html', posts=posts, form=form)
 
 @app.route("/about")
 def about():
-    return render_template('public/about.html', title='About')
+    return render_template('about.html', title='About')
 
 @app.route("/garage")
 def garage():
-    return render_template('mechanic/garage.html', title='Garage', cars=Car.query.all())
+    return render_template('garage.html', title='Garage', cars=Car.query.all())
 
 @app.route("/posts")
 def posts():
