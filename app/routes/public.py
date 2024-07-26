@@ -33,7 +33,7 @@ def posts():
     return render_template('posts.html', posts=all_posts)
 
 @app.route("/post/new", methods=['POST'])
-#@login_required
+@login_required
 def new_post():
     form = PostForm()
     if form.validate_on_submit():
@@ -47,6 +47,7 @@ def new_post():
 
 @app.route("/post/<int:post_id>", methods=['GET', 'POST'])
 def post(post_id):
+
     post = Post.query.get_or_404(post_id)
     form = CommentForm()
     if form.validate_on_submit():
@@ -62,6 +63,7 @@ def post(post_id):
     return render_template('post.html', post=post, form=form, comments=comments)
 
 @app.route("/post/<int:post_id>/comments", methods=['GET'])
+@login_required
 def get_post_comments(post_id):
     post = Post.query.get_or_404(post_id)
     limit = request.args.get('limit', type=int)
@@ -128,8 +130,6 @@ def delete_comment(comment_id):
     db.session.commit()
     flash('Your comment has been deleted!', 'success')
     return redirect(url_for('post', post_id=post_id))
-
-# public.py
 
 @app.route("/edit_post/<int:post_id>", methods=['GET', 'POST'])
 @login_required
