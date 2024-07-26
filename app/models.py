@@ -10,9 +10,9 @@ def load_user(user_id):
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), unique=True, nullable=False)  # Ensure uniqueness
-    email = db.Column(db.String(120), unique=True, nullable=False)  # Add email field
-    phone_number = db.Column(db.String(30), unique=True, nullable=False)
+    username = db.Column(db.String(100), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    phone_number = db.Column(db.String(30), unique=True, nullable=True)
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
     biography = db.Column(db.Text, nullable=True)
     expertise = db.Column(db.String(200), nullable=True)

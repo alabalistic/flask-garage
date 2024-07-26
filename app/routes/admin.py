@@ -128,50 +128,75 @@ def delete_user(user_id):
     app.logger.info(f'{current_user.username}  deleted user {user.phone_number}')
     return redirect(url_for('admin_users'))
 
+from app import oauth, google
 
-
-@app.route("/register", methods=['GET', 'POST'])
-def register():
-    if current_user.is_authenticated:
-        return redirect(url_for('home'))
+# @app.route("/register", methods=['GET', 'POST'])
+# def register():
+#     if current_user.is_authenticated:
+#         return redirect(url_for('home'))
     
-    form = RegistrationForm()
-    if form.validate_on_submit():
-        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        user = User(username=form.username.data, email=form.email.data, phone_number=form.phone_number.data, password=hashed_password)
+#     form = RegistrationForm()
+#     if form.validate_on_submit():
+#         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+#         user = User(username=form.username.data, email=form.email.data, phone_number=form.phone_number.data, password=hashed_password)
         
-        role = Role.query.filter_by(name='frontend_user').first()
-        if role:
-            if role not in user.roles:
-                user.roles.append(role)  
+#         role = Role.query.filter_by(name='frontend_user').first()
+#         if role:
+#             if role not in user.roles:
+#                 user.roles.append(role)  
+#             db.session.add(user)
+#             db.session.commit()
+        
+#         flash(f'Регистрацията успешна за {form.username.data}!', 'success')
+#         app.logger.info(f'New user registered with {user.phone_number}')
+#         return redirect(url_for('login'))
+        
+#     return render_template('admin/register.html', title='Register', form=form)
+
+
+@app.route('/login')
+def login():
+    redirect_uri = url_for('auth_callback', _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+@app.route('/auth/callback')
+def auth_callback():
+    token = google.authorize_access_token()
+    user_info = google.parse_id_token(token)
+    
+    if user_info:
+        user = User.query.filter_by(email=user_info['email']).first()
+        if not user:
+            user = User(
+                username=user_info['name'],
+                email=user_info['email'],
+                phone_number=None,  # Initially set to None
+                password=os.urandom(12).hex()  # Default random password
+            )
             db.session.add(user)
             db.session.commit()
         
-        flash(f'Регистрацията успешна за {form.username.data}!', 'success')
-        app.logger.info(f'New user registered with {user.phone_number}')
-        return redirect(url_for('login'))
-        
-    return render_template('admin/register.html', title='Register', form=form)
-
-
-@app.route("/login", methods=['GET', 'POST'])
-def login():
-    if current_user.is_authenticated:
+        login_user(user)
+        if not user.phone_number:
+            return redirect(url_for('update_phone_number'))
         return redirect(url_for('home'))
+    
+    flash('Failed to authenticate with Google.', 'danger')
+    return redirect(url_for('login'))
 
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(phone_number=form.phone_number.data).first()
-        if user and bcrypt.check_password_hash(user.password, form.password.data):
-            login_user(user, remember=form.remember.data)
-            next_page = request.args.get('next')
-            app.logger.info(f'{current_user.username}  logged with {user.phone_number}')
-            return redirect(next_page) if next_page else redirect(url_for('home'))
+@app.route('/update_phone_number', methods=['GET', 'POST'])
+@login_required
+def update_phone_number():
+    if request.method == 'POST':
+        phone_number = request.form.get('phone_number')
+        user = current_user
+        user.phone_number = phone_number
+        db.session.commit()
+        flash('Your phone number has been updated!', 'success')
+        return redirect(url_for('home'))
+    
+    return render_template('update_phone_number.html')
 
-        else:
-            flash('Грешен Телефонен номер или парола', 'danger')
-
-    return render_template('admin/login.html', title='Login', form=form)
 
 @app.route("/admin_dashboard")
 @login_required
@@ -204,7 +229,7 @@ def admin_users():
     return render_template('admin/admin_users.html', users=users, pagination=pagination)
 
 
-@app.route("/logout")
+@app.route('/logout')
 def logout():
     logout_user()
     return redirect(url_for('home'))
