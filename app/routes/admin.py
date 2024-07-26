@@ -8,6 +8,7 @@ import os
 import secrets
 from PIL import Image
 from flask import current_app, session
+from app import oauth, google
 
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
@@ -45,13 +46,13 @@ def create_user():
     form.role.choices = [(role.id, role.name) for role in Role.query.all()]
 
     if form.validate_on_submit():
-        user = User.query.filter_by(phone_number=form.phone_number.data).first()
+        user = User.query.filter_by(email=form.email.data).first()
         if user:
-            flash(f'Потребител с телефонен номер:  {form.phone_number.data} е вече регистриран.', 'danger')
+            flash(f'Потребител с Email:  {form.email.data} е вече регистриран.', 'danger')
             return redirect(url_for('create_user'))
 
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        user = User(username=form.username.data, email=form.email.data, phone_number=form.phone_number.data, password=hashed_password)
+        user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         db.session.add(user)
         db.session.flush()
         
@@ -61,10 +62,11 @@ def create_user():
         
         db.session.commit()
         flash(f'User {form.username.data} регистриран успешно!', 'success')
-        app.logger.info(f'{current_user.username}  created user {user.phone_number}')
+        app.logger.info(f'{current_user.username}  created user {user.email}')
         return redirect(url_for('admin_users'))
         
     return render_template('admin/create_user.html', form=form)
+
 
 @app.route("/search_users", methods=['GET'])
 @login_required
@@ -75,12 +77,13 @@ def search_users():
     
     query = request.args.get('query')
     if query:
-        users = User.query.filter(User.username.contains(query) | User.phone_number.contains(query)).all()
+        users = User.query.filter(User.username.contains(query) | User.email.contains(query)).all()
     else:
         users = User.query.all()
 
     form = AdminCreateUserForm()
     return render_template('admin/admin_users.html', form=form, users=users)
+
 
 @app.route("/edit_user/<int:user_id>", methods=['GET', 'POST'])
 @login_required
@@ -90,13 +93,12 @@ def edit_user(user_id):
         return redirect(url_for('home'))
     
     user = User.query.get_or_404(user_id)
-    form = AdminEditUserForm(original_username=user.username, original_email=user.email, original_phone_number=user.phone_number)
+    form = AdminEditUserForm(original_username=user.username, original_email=user.email)
     form.role.choices = [(role.id, role.name) for role in Role.query.all()]
 
     if form.validate_on_submit():
         user.username = form.username.data
         user.email = form.email.data
-        user.phone_number = form.phone_number.data
 
         user.roles = []
         new_role = Role.query.get(form.role.data)
@@ -104,13 +106,12 @@ def edit_user(user_id):
             user.roles.append(new_role)
 
         db.session.commit()
-        app.logger.info(f'{current_user.username}  updated user {user.phone_number}')
+        app.logger.info(f'{current_user.username}  updated user {user.email}')
         flash(f'User {user.username} редактиран успешно!', 'success')
         return redirect(url_for('admin_users'))
     elif request.method == 'GET':
         form.username.data = user.username
         form.email.data = user.email
-        form.phone_number.data = user.phone_number
         form.role.data = user.roles[0].id if user.roles else ''
     
     return render_template('admin/edit_user.html', form=form, user=user)
@@ -126,41 +127,23 @@ def delete_user(user_id):
     db.session.delete(user)
     db.session.commit()
     flash(f'User {user.username} е изтрит успешно!', 'success')
-    app.logger.info(f'{current_user.username}  deleted user {user.phone_number}')
+    app.logger.info(f'{current_user.username}  deleted user {user.email}')
     return redirect(url_for('admin_users'))
 
-from app import oauth, google
-
-# @app.route("/register", methods=['GET', 'POST'])
-# def register():
-#     if current_user.is_authenticated:
-#         return redirect(url_for('home'))
-    
-#     form = RegistrationForm()
-#     if form.validate_on_submit():
-#         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-#         user = User(username=form.username.data, email=form.email.data, phone_number=form.phone_number.data, password=hashed_password)
-        
-#         role = Role.query.filter_by(name='frontend_user').first()
-#         if role:
-#             if role not in user.roles:
-#                 user.roles.append(role)  
-#             db.session.add(user)
-#             db.session.commit()
-        
-#         flash(f'Регистрацията успешна за {form.username.data}!', 'success')
-#         app.logger.info(f'New user registered with {user.phone_number}')
-#         return redirect(url_for('login'))
-        
-#     return render_template('admin/register.html', title='Register', form=form)
 
 
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    redirect_uri = url_for('auth_callback', _external=True)
-    nonce = os.urandom(16).hex()
-    session['nonce'] = nonce
-    return google.authorize_redirect(redirect_uri, nonce=nonce)
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user and bcrypt.check_password_hash(user.password, form.password.data):
+            login_user(user, remember=form.remember.data)
+            next_page = request.args.get('next')
+            return redirect(next_page) if next_page else redirect(url_for('home'))
+        else:
+            flash('Login unsuccessful. Please check email and password', 'danger')
+    return render_template('login.html', title='Login', form=form)
 
 def generate_unique_username(base_username):
     count = 1
@@ -187,7 +170,6 @@ def auth_callback():
             user = User(
                 username=unique_username,
                 email=user_info['email'],
-                phone_number='0000000000',  # Temporary default phone number
                 password=os.urandom(12).hex()  # Default random password
             )
             db.session.add(user)
@@ -200,8 +182,6 @@ def auth_callback():
             db.session.commit()
         
         login_user(user)
-        if user.phone_number == '0000000000':
-            return redirect(url_for('update_phone_number'))
         return redirect(url_for('home'))
     
     flash('Failed to authenticate with Google.', 'danger')

@@ -38,10 +38,10 @@ def validate_registration_number(form, field):
     
     # Update the field data with the transformed number
     field.data = transformed_number.upper()
+
 class RegistrationForm(FlaskForm):
     username = StringField('Име', validators=[DataRequired(), Length(min=2, max=20)])
     email = StringField('Email', validators=[DataRequired(), Email()])
-    phone_number = StringField('Телефонен номер', validators=[DataRequired(), Length(min=10, max=30)])
     password = PasswordField('Парола', validators=[DataRequired()])
     confirm_password = PasswordField('Повтори паролата', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Регистрация')
@@ -56,19 +56,12 @@ class RegistrationForm(FlaskForm):
         if user:
             raise ValidationError('Email вече е регистриран, моля изберете друг')
 
-    def validate_phone_number(self, phone_number):
-        user = User.query.filter_by(phone_number=phone_number.data).first()
-        if user:
-            raise ValidationError('Този номер е зает опитайте с друг')
-
-
-
 class LoginForm(FlaskForm):
-    phone_number = StringField('Телефонен номер', validators=[DataRequired(), Length(min=10, max=30)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Парола', validators=[DataRequired()])
     remember = BooleanField('Запомни ме')
     submit = SubmitField('Вход')
-
+    
 
 class CreateCarForm(FlaskForm):
     registration_number = StringField('Регистрационен номер', validators=[DataRequired(), validate_registration_number])

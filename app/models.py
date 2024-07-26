@@ -12,7 +12,7 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    phone_number = db.Column(db.String(30), unique=False, nullable=False, default='0000000000')
+    phone_number = db.Column(db.String(30), unique=False, nullable=True, default=None)
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
     biography = db.Column(db.Text, nullable=True)
     expertise = db.Column(db.String(200), nullable=True)
@@ -24,7 +24,7 @@ class User(db.Model, UserMixin):
     comments = db.relationship('Comment', backref='author', lazy=True, cascade='all, delete-orphan')
     
     def __repr__(self):
-        return f"User('{self.username}', '{self.email}', '{self.phone_number}')"
+        return f"User('{self.username}', '{self.email}')"
 
     def has_role(self, role_name):
         return any(role.name == role_name for role in self.roles)
