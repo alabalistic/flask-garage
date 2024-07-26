@@ -7,7 +7,8 @@ from flask_paginate import Pagination, get_page_args
 import os
 import secrets
 from PIL import Image
-from flask import current_app
+from flask import current_app, session
+
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
@@ -157,12 +158,19 @@ from app import oauth, google
 @app.route('/login')
 def login():
     redirect_uri = url_for('auth_callback', _external=True)
-    return google.authorize_redirect(redirect_uri)
+    nonce = os.urandom(16).hex()
+    session['nonce'] = nonce
+    return google.authorize_redirect(redirect_uri, nonce=nonce)
 
 @app.route('/auth/callback')
 def auth_callback():
     token = google.authorize_access_token()
-    user_info = google.parse_id_token(token)
+    nonce = session.pop('nonce', None)
+    if not nonce:
+        flash('Nonce not found in session.', 'danger')
+        return redirect(url_for('login'))
+
+    user_info = google.parse_id_token(token, nonce=nonce)
     
     if user_info:
         user = User.query.filter_by(email=user_info['email']).first()
