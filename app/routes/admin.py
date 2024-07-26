@@ -162,6 +162,15 @@ def login():
     session['nonce'] = nonce
     return google.authorize_redirect(redirect_uri, nonce=nonce)
 
+def generate_unique_username(base_username):
+    count = 1
+    new_username = base_username
+    while User.query.filter_by(username=new_username).first():
+        new_username = f"{base_username}{count}"
+        count += 1
+    return new_username
+
+
 @app.route('/auth/callback')
 def auth_callback():
     token = google.authorize_access_token()
@@ -175,8 +184,9 @@ def auth_callback():
     if user_info:
         user = User.query.filter_by(email=user_info['email']).first()
         if not user:
+            unique_username = generate_unique_username(user_info['name'])
             user = User(
-                username=user_info['name'],
+                username=unique_username,
                 email=user_info['email'],
                 phone_number='0000000000',  # Temporary default phone number
                 password=os.urandom(12).hex()  # Default random password
@@ -203,7 +213,7 @@ def update_phone_number():
         flash('Your phone number has been updated!', 'success')
         return redirect(url_for('home'))
     
-    return render_template('update_phone_number.html')  
+    return render_template('update_phone_number.html')
 
 
 @app.route("/admin_dashboard")
