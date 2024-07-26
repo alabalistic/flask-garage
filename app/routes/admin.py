@@ -170,7 +170,6 @@ def generate_unique_username(base_username):
         count += 1
     return new_username
 
-
 @app.route('/auth/callback')
 def auth_callback():
     token = google.authorize_access_token()
@@ -192,6 +191,12 @@ def auth_callback():
                 password=os.urandom(12).hex()  # Default random password
             )
             db.session.add(user)
+            db.session.flush()  # Flush to get the user ID
+
+            # Assign the default role
+            default_role = Role.query.filter_by(name='frontend_user').first()
+            if default_role:
+                user.roles.append(default_role)
             db.session.commit()
         
         login_user(user)
