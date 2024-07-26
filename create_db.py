@@ -25,7 +25,7 @@ with app.app_context():
 
     # Create and assign roles to initial users
     if not User.query.filter_by(username="Admin").first():
-        admin_user = User(username='Admin',email='admin@example.com', phone_number="0877993946", password="$2b$12$rO6wrQC5uuyOg/LYIUbvmOxd7KhL3qaWfITos07XbCAgREWXlF2Am", image_file='default.jpg')
+        admin_user = User(username='Admin',email='alabalistic@gmail.com', phone_number="0877993946", password="$2b$12$rO6wrQC5uuyOg/LYIUbvmOxd7KhL3qaWfITos07XbCAgREWXlF2Am", image_file='default.jpg')
         db.session.add(admin_user)
         db.session.commit()  # Commit admin user to get its ID
         admin_role = Role.query.filter_by(name='admin').first()
@@ -33,7 +33,7 @@ with app.app_context():
         db.session.commit()  # Commit role assignment
 
     if not User.query.filter_by(username="РоБот").first():
-        mechanic_user = User(username='РоБот', email='robot@example.com', phone_number="08779939461", password="$2b$12$rO6wrQC5uuyOg/LYIUbvmOxd7KhL3qaWfITos07XbCAgREWXlF2Am", image_file='robot.jpg')
+        mechanic_user = User(username='РоБот', email='yne.devops@gmail.com', phone_number="0877993946", password="$2b$12$rO6wrQC5uuyOg/LYIUbvmOxd7KhL3qaWfITos07XbCAgREWXlF2Am", image_file='robot.jpg')
         db.session.add(mechanic_user)
         db.session.commit()  # Commit mechanic user to get its ID
         mechanic_role = Role.query.filter_by(name='mechanic').first()
