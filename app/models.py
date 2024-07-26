@@ -12,7 +12,7 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    phone_number = db.Column(db.String(30), unique=True, nullable=True)
+    phone_number = db.Column(db.String(30), unique=True, nullable=False, default='0000000000')
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
     biography = db.Column(db.Text, nullable=True)
     expertise = db.Column(db.String(200), nullable=True)
@@ -26,7 +26,6 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f"User('{self.username}', '{self.email}', '{self.phone_number}')"
 
-
     def has_role(self, role_name):
         return any(role.name == role_name for role in self.roles)
 
@@ -35,7 +34,7 @@ class User(db.Model, UserMixin):
 
     def is_mechanic(self):
         return self.has_role('mechanic')
-        
+
     def is_car_owner(self):
         return self.has_role('car_owner')
     
@@ -43,9 +42,6 @@ class User(db.Model, UserMixin):
         if self.id == post.user_id or self.is_mechanic():
             return True
         return False
-    
-    def __repr__(self):
-        return f"User('{self.username}', '{self.phone_number}')"
 
 
 # Association table for user roles
