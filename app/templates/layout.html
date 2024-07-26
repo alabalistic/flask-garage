@@ -6,19 +6,25 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap&subset=cyrillic" rel="stylesheet">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='android-chrome-192x192.png') }}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='android-chrome-512x512.png') }}">
     <title>Гаража{% if title %} - {{ title }}{% endif %}</title>
 </head>
 <body>
     <header class="site-header">
         <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
             <div class="container">
-                <a class="navbar-brand mr-4" href="/">Начало</a>
+                <a class="navbar-brand mr-4" href="/">
+                    <img src="{{ url_for('static', filename='garage-logo.png') }}" alt="Гаража" style="height: 40px;">
+                </a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarToggle">
                     <div class="navbar-nav mr-auto">
-                        <a class="nav-item nav-link" href="{{ url_for('about') }}">За нас</a>
                         {% if current_user.is_authenticated %}
                             {% if current_user.is_admin() %}
                                 <a class="nav-item nav-link" href="{{ url_for('admin_dashboard') }}">Админ</a>
@@ -96,6 +102,7 @@
     <footer class="footer mt-auto py-3 bg-steel">
         <div class="container text-center">
             <span class="text-muted">
+                <a class="nav-item nav-link" href="{{ url_for('about') }}">За нас</a>
                 <a href="{{ url_for('privacy') }}" class="text-light">Политика за поверителност</a> | 
                 <a href="{{ url_for('terms') }}" class="text-light">Условия за ползване</a>
             </span>
