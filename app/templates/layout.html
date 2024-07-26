@@ -50,8 +50,7 @@
                             </span>
                             <a class="nav-item nav-link" href="{{ url_for('logout') }}">Изход</a>
                         {% else %}
-                            <a class="nav-item nav-link" href="{{ url_for('login') }}">Вход</a>
-                            <a class="nav-item nav-link" href="{{ url_for('register') }}">Регистрация</a>
+                            <a class="nav-item nav-link" href="{{ url_for('login') }}">Login with Google</a>
                         {% endif %}
                         <!-- Search Bar -->
                         <form class="form-inline my-2 my-lg-0" method="GET" action="{{ url_for('search') }}">
