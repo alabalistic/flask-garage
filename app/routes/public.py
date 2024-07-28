@@ -6,7 +6,6 @@ from app import app, db
 from app.forms import PostForm, CommentForm
 from app.models import Post, Comment, Car, User, Role, RepairShopImage
 
-
 @app.context_processor
 def inject_mechanics():
     mechanics = User.query.filter(User.roles.any(Role.name == 'mechanic')).all()
@@ -33,12 +32,11 @@ def posts():
     return render_template('posts.html', posts=all_posts)
 
 @app.route("/post/new", methods=['POST'])
-#@login_required
+@login_required
 def new_post():
     form = PostForm()
     if form.validate_on_submit():
-        user_id = current_user.id if current_user.is_authenticated else User.query.filter_by(username='Анонимен').first().id
-        post = Post(content=form.content.data, user_id=user_id)
+        post = Post(content=form.content.data, user_id=current_user.id)
         db.session.add(post)
         db.session.commit()
         flash('Поста е създаден успешно', 'success')
@@ -78,8 +76,6 @@ def get_post_comments(post_id):
         'date_posted': comment.date_posted.strftime('%Y-%m-%d %H:%M')
     } for comment in comments]
     return jsonify({'comments': comments_data})
-
-
 
 @app.route("/search", methods=['GET'])
 def search():
@@ -128,8 +124,6 @@ def delete_comment(comment_id):
     db.session.commit()
     flash('Your comment has been deleted!', 'success')
     return redirect(url_for('post', post_id=post_id))
-
-# public.py
 
 @app.route("/edit_post/<int:post_id>", methods=['GET', 'POST'])
 @login_required

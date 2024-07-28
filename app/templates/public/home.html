@@ -8,10 +8,11 @@
         <h4>Тук си споделяш проблема и те насочваме към точният човек</h4>
     
         <!-- Post Form -->
+        {% if current_user.is_authenticated %}
         <form method="POST" action="{{ url_for('new_post') }}" class="post-form mt-4">
             {{ form.hidden_tag() }}
             <div class="form-group">
-                <label for="content" class="form-label text-left">(Вход с гугъл задължителен)</label>
+                <!-- <label for="content" class="form-label text-left"></label> -->
                 {{ form.content(class="form-control", id="post-content", placeholder="Пример: Смяна масло и филтри на БМВ 5 Кой може за тази седмица") }}
             </div>
             {% if current_user.is_authenticated and current_user.is_mechanic() %}
@@ -23,6 +24,9 @@
             {% endif %}
             <button type="submit" class="btn btn-hero mt-2">Публикувай</button>
         </form>
+        {% else %}
+        <p>Моля, <a href="{{ url_for('login') }}">влезте в акаунта си</a>, за да публикувате съобщение.</p>
+        {% endif %}
     </div>
 
     <!-- Latest Posts -->
