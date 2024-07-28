@@ -1,3 +1,4 @@
+/* main.css */
 body {
   background: #f8f9fa;
   color: #212529;
@@ -47,6 +48,7 @@ h1, h2, h3, h4, h5, h6 {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+
 }
 
 @media (max-width: 576px) {
@@ -118,7 +120,12 @@ h1, h2, h3, h4, h5, h6 {
   border-color: #4a6c82;
 }
 
-.btn-primary:hover {
+.btn-hero {
+  background-color: #fe5b35;
+  border-color: #fe5b35;
+}
+
+.btn-primary:hover, .btn-hero:hover {
   background-color: #3a5a6a;
   border-color: #3a5a6a;
 }
@@ -180,8 +187,9 @@ h1, h2, h3, h4, h5, h6 {
 .article-metadata a:hover {
   color: #2c3e50;
 }
+
 .navbar-brand img {
-  height: 60px; /* Adjust height as needed */
+  height: 60px;
   width: auto;
-  padding: 0px 0; /* Adjust padding if necessary */
+  padding: 0;
 }

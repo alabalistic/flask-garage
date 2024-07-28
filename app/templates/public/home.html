@@ -1,30 +1,34 @@
-<!-- home.html -->
 {% extends "layout.html" %}
 {% block content %}
 <div class="content-section">
 
     <!-- Hero Section -->
-    <div class="jumbotron text-center">
-        <h1>Свържи се с механик</h1>
-        <p>Или сподели проблем, и специалист ще се свърже с вас.</p>
-    </div>
-
-    <!-- Post Form -->
-    <form method="POST" action="{{ url_for('new_post') }}" class="post-form mb-4">
-        {{ form.hidden_tag() }}
-        <div class="form-group">
-            <label for="content" class="form-label">Опишете проблема тук (Регистрацията е препоръчителна)</label>
-            {{ form.content(class="form-control", id="post-content", placeholder="Пример: Смяна масло и филтри на БМВ 5 Кой може за тази седмица") }}
-        </div>
-        {% if current_user.is_authenticated and current_user.is_mechanic() %}
-        <div class="input-group mt-2">
-            <div class="input-group-append">
-                <button type="button" class="btn btn-outline-secondary" id="post-record-button">🎤 Диктофон</button>
+    <div class="jumbotron text-center bg-hero text-white">
+        <h4>Тук си споделяш проблема и те насочваме към точният човек</h4>
+    
+        <!-- Post Form -->
+        {% if current_user.is_authenticated %}
+        <form method="POST" action="{{ url_for('new_post') }}" class="post-form mt-4">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                <!-- <label for="content" class="form-label text-left">(Вход с гугъл задължителен)</label> -->
+                {{ form.content(class="form-control", id="post-content", placeholder="Пример: Смяна масло и филтри на БМВ 5 Кой може за тази седмица") }}
             </div>
+            {% if current_user.is_authenticated and current_user.is_mechanic() %}
+            <div class="input-group mt-2">
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-outline-secondary" id="post-record-button">🎤 Диктофон</button>
+                </div>
+            </div>
+            {% endif %}
+            <button type="submit" class="btn btn-hero mt-2">Публикувай</button>
+        </form>
+        {% else %}
+        <div class="alert alert-warning mt-4" role="alert">
+            Моля, <a href="{{ url_for('login') }}" class="alert-link">влезте в акаунта си</a>, за да зададете въпрос.
         </div>
         {% endif %}
-        <button type="submit" class="btn btn-primary mt-2">Публикувай</button>
-    </form>
+    </div>
 
     <!-- Latest Posts -->
     <div class="latest-posts">
