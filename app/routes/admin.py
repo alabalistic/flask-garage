@@ -10,22 +10,13 @@ from PIL import Image
 from flask import current_app, session
 
 
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
 def save_picture(form_picture, folder='profile_pics'):
-    if not allowed_file(form_picture.filename):
-        raise ValueError("Unsupported file type. Please upload a .jpg, .jpeg, or .png file.")
-
     random_hex = secrets.token_hex(8)
     _, f_ext = os.path.splitext(form_picture.filename)
     picture_fn = random_hex + f_ext
     picture_path = os.path.join(current_app.root_path, 'static', folder, picture_fn)
-
-    output_size = (500, 500)
+    
+    output_size = (300, 300) if folder == 'profile_pics' else (800, 600)
     i = Image.open(form_picture)
     i.thumbnail(output_size)
     i.save(picture_path)
@@ -339,27 +330,24 @@ def update_mechanic_profile():
 
     form = MechanicProfileForm()
     if form.validate_on_submit():
-        try:
-            current_user.username = form.username.data
-            current_user.phone_number = form.phone_number.data
-            current_user.biography = form.biography.data
-            current_user.expertise = form.expertise.data
+        current_user.username = form.username.data
+        current_user.phone_number = form.phone_number.data
+        current_user.biography = form.biography.data
+        current_user.expertise = form.expertise.data
 
-            if form.profile_picture.data:
-                picture_file = save_picture(form.profile_picture.data, folder='profile_pics')
-                current_user.image_file = picture_file
+        if form.profile_picture.data:
+            picture_file = save_picture(form.profile_picture.data, folder='profile_pics')
+            current_user.image_file = picture_file
 
-            if form.repair_shop_pictures.data:
-                for picture in request.files.getlist(form.repair_shop_pictures.name):
-                    picture_file = save_picture(picture, folder='repair_shop_pics')
-                    repair_shop_image = RepairShopImage(image_file=picture_file, user_id=current_user.id)
-                    db.session.add(repair_shop_image)
+        if form.repair_shop_pictures.data:
+            for picture in request.files.getlist(form.repair_shop_pictures.name):
+                picture_file = save_picture(picture, folder='repair_shop_pics')
+                repair_shop_image = RepairShopImage(image_file=picture_file, user_id=current_user.id)
+                db.session.add(repair_shop_image)
 
-            db.session.commit()
-            flash('Профилът ви е актуализиран!', 'success')
-            return redirect(url_for('mechanic_profile', mechanic_id=current_user.id))
-        except ValueError as e:
-            flash(str(e), 'danger')
+        db.session.commit()
+        flash('Профилът ви е актуализиран!', 'success')
+        return redirect(url_for('mechanic_profile', mechanic_id=current_user.id))
 
     elif request.method == 'GET':
         form.username.data = current_user.username
@@ -368,3 +356,16 @@ def update_mechanic_profile():
         form.expertise.data = current_user.expertise
 
     return render_template('public/update_mechanic_profile.html', title='Актуализиране на профила', form=form)
+
+@app.route('/delete_repair_shop_image/<int:image_id>', methods=['POST'])
+@login_required
+def delete_repair_shop_image(image_id):
+    image = RepairShopImage.query.get_or_404(image_id)
+    if image.user_id != current_user.id:
+        flash('You do not have permission to delete this image.', 'danger')
+        return redirect(url_for('mechanic_profile', mechanic_id=current_user.id))
+    
+    db.session.delete(image)
+    db.session.commit()
+    flash('Image has been deleted!', 'success')
+    return redirect(url_for('mechanic_profile', mechanic_id=current_user.id))

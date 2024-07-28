@@ -202,8 +202,3 @@ class MechanicProfileForm(FlaskForm):
     profile_picture = FileField('Качи профилна снимка', validators=[FileAllowed(['jpg', 'jpeg', 'png'])])
     repair_shop_pictures = FileField('Качи снимки на сервиза', validators=[FileAllowed(['jpg', 'jpeg', 'png'])], render_kw={"multiple": True})
     submit = SubmitField('Запази промените')
-
-    def validate_phone_number(self, phone_number):
-        user = User.query.filter_by(phone_number=phone_number.data).first()
-        if user and user.id != current_user.id:
-            raise ValidationError('Този номер е зает. опитайте с друг или Влезте в своя профил.')

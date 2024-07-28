@@ -54,13 +54,10 @@ class RepairShopImage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     image_file = db.Column(db.String(20), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user = db.relationship('User', back_populates='repair_shop_images')
 
-    def __repr__(self):
-        return f"RepairShopImage('{self.image_file}', '{self.user_id}')"
+User.repair_shop_images = db.relationship('RepairShopImage', back_populates='user', cascade='all, delete-orphan')
 
-
-    def __repr__(self):
-        return f"RepairShopImage('{self.image_file}', '{self.user_id}')"
 
 class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True)
