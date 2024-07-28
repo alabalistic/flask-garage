@@ -34,8 +34,25 @@
                 {{ form.role.label(class="form-control-label") }}
                 {{ form.role(class="form-control") }}
             </div>
+            <div class="form-group">
+                {{ form.repair_shop_pictures.label(class="form-control-label") }}
+                {{ form.repair_shop_pictures(class="form-control-file") }}
+            </div>
             <button type="submit" class="btn btn-primary">Запази промените</button>
         </form>
+        
+        <!-- Display current repair shop images -->
+        <h3>Снимки на сервиза</h3>
+        <div class="image-grid">
+            {% for image in repair_shop_images %}
+            <div class="image-container">
+                <img src="{{ url_for('static', filename='repair_shop_pics/' + image.image_file) }}" class="grid-img" alt="Repair shop image">
+                <form action="{{ url_for('delete_repair_shop_image_admin', image_id=image.id) }}" method="POST">
+                    <button type="submit" class="btn btn-danger btn-sm btn-delete-image">Delete</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
     </div>
 </div>
 {% endblock %}

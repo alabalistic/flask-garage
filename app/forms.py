@@ -122,6 +122,7 @@ class AdminEditUserForm(FlaskForm):
     expertise = StringField('Експертиза', validators=[Optional(), Length(max=200)])
     profile_picture = FileField('Качи профилна снимка', validators=[FileAllowed(['jpg', 'jpeg', 'png'])])
     role = SelectField('Роля', coerce=int, validators=[DataRequired()])
+    repair_shop_pictures = FileField('Качи снимки на сервиза', validators=[FileAllowed(['jpg', 'jpeg', 'png'])], render_kw={"multiple": True})
     submit = SubmitField('Запази')
 
     def __init__(self, original_username=None, original_email=None, original_phone_number=None, *args, **kwargs):
@@ -147,6 +148,7 @@ class AdminEditUserForm(FlaskForm):
             user = User.query.filter_by(phone_number=phone_number.data).first()
             if user:
                 raise ValidationError('Вече съществува потребител с този телефонен номер')
+
 
 
             
