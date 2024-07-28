@@ -118,6 +118,9 @@ class AdminEditUserForm(FlaskForm):
     username = StringField('Име', validators=[DataRequired(), Length(min=2, max=20)])
     email = StringField('Email', validators=[DataRequired(), Email()])
     phone_number = StringField('Телефонен номер', validators=[DataRequired(), Length(min=10, max=15)])
+    biography = TextAreaField('Биография', validators=[Optional(), Length(max=500)])
+    expertise = StringField('Експертиза', validators=[Optional(), Length(max=200)])
+    profile_picture = FileField('Качи профилна снимка', validators=[FileAllowed(['jpg', 'jpeg', 'png'])])
     role = SelectField('Роля', coerce=int, validators=[DataRequired()])
     submit = SubmitField('Запази')
 
@@ -144,6 +147,7 @@ class AdminEditUserForm(FlaskForm):
             user = User.query.filter_by(phone_number=phone_number.data).first()
             if user:
                 raise ValidationError('Вече съществува потребител с този телефонен номер')
+
 
             
 class UpdateAccountForm(FlaskForm):

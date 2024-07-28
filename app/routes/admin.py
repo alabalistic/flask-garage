@@ -97,6 +97,18 @@ def edit_user(user_id):
         user.username = form.username.data
         user.email = form.email.data
         user.phone_number = form.phone_number.data
+        user.biography = form.biography.data
+        user.expertise = form.expertise.data
+
+        if form.profile_picture.data:
+            picture_file = save_picture(form.profile_picture.data, folder='profile_pics')
+            user.image_file = picture_file
+
+        if form.repair_shop_pictures.data:
+            for picture in request.files.getlist(form.repair_shop_pictures.name):
+                picture_file = save_picture(picture, folder='repair_shop_pics')
+                repair_shop_image = RepairShopImage(image_file=picture_file, user_id=user.id)
+                db.session.add(repair_shop_image)
 
         user.roles = []
         new_role = Role.query.get(form.role.data)
@@ -104,16 +116,21 @@ def edit_user(user_id):
             user.roles.append(new_role)
 
         db.session.commit()
-        app.logger.info(f'{current_user.username}  updated user {user.phone_number}')
+        app.logger.info(f'{current_user.username} updated user {user.phone_number}')
         flash(f'User {user.username} редактиран успешно!', 'success')
         return redirect(url_for('admin_users'))
     elif request.method == 'GET':
         form.username.data = user.username
         form.email.data = user.email
         form.phone_number.data = user.phone_number
+        form.biography.data = user.biography
+        form.expertise.data = user.expertise
         form.role.data = user.roles[0].id if user.roles else ''
     
-    return render_template('admin/edit_user.html', form=form, user=user)
+    repair_shop_images = RepairShopImage.query.filter_by(user_id=user.id).all()
+    return render_template('admin/edit_user.html', form=form, user=user, repair_shop_images=repair_shop_images)
+
+
 
 @app.route("/delete_user/<int:user_id>", methods=['POST'])
 @login_required
@@ -368,3 +385,22 @@ def update_mechanic_profile():
         form.expertise.data = current_user.expertise
 
     return render_template('public/update_mechanic_profile.html', title='Актуализиране на профила', form=form)
+
+@app.route('/delete_repair_shop_image_admin/<int:image_id>', methods=['POST'])
+@login_required
+def delete_repair_shop_image_admin(image_id):
+    if not current_user.is_admin():
+        flash('You do not have permission to delete this image.', 'danger')
+        return redirect(url_for('admin_dashboard'))
+    
+    image = RepairShopImage.query.get_or_404(image_id)
+    
+    # Delete the image file from the filesystem
+    picture_path = os.path.join(current_app.root_path, 'static/repair_shop_pics', image.image_file)
+    if os.path.exists(picture_path):
+        os.remove(picture_path)
+
+    db.session.delete(image)
+    db.session.commit()
+    flash('Image has been deleted!', 'success')
+    return redirect(url_for('edit_user', user_id=image.user_id))
