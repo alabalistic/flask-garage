@@ -34,6 +34,7 @@
                     <td>{{ car.mechanic.username if car.mechanic else 'N/A' }}</td>
                     <td>{{ 'Видим' if car.visibility else 'Скрит' }}</td>
                     <td>
+                        <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#editCarModal{{ car.id }}">Редактирай</button>
                         {% if not car.visibility %}
                         <form method="post" action="{{ url_for('restore_car_visibility', car_id=car.id) }}" style="display:inline;">
                             <button type="submit" class="btn btn-success btn-sm">Възстанови</button>
@@ -41,6 +42,49 @@
                         {% endif %}
                     </td>
                 </tr>
+                <!-- Edit Car Modal -->
+                <div class="modal fade" id="editCarModal{{ car.id }}" tabindex="-1" role="dialog" aria-labelledby="editCarModalLabel{{ car.id }}" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editCarModalLabel{{ car.id }}">Редактирай Автомобил</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="POST" action="{{ url_for('update_car', car_id=car.id) }}">
+                                    {{ form.hidden_tag() }}
+                                    <div class="form-group">
+                                        {{ form.registration_number.label(class="form-control-label") }}
+                                        {{ form.registration_number(class="form-control", value=car.registration_number) }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form.vin_number.label(class="form-control-label") }}
+                                        {{ form.vin_number(class="form-control", value=car.vin_number) }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form.additional_info.label(class="form-control-label") }}
+                                        {{ form.additional_info(class="form-control", value=car.additional_info) }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form.owner_name.label(class="form-control-label") }}
+                                        {{ form.owner_name(class="form-control", value=car.owner.name if car.owner else '') }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form.owner_phone_number.label(class="form-control-label") }}
+                                        {{ form.owner_phone_number(class="form-control", value=car.owner.phone_number if car.owner else '') }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form.mechanic_id.label(class="form-control-label") }}
+                                        {{ form.mechanic_id(class="form-control", value=car.mechanic.id if car.mechanic else '') }}
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Запази промените</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 {% endfor %}
             </tbody>
         </table>
