@@ -1,7 +1,7 @@
 from flask import render_template, url_for, flash, redirect, request
 from flask_login import login_user, current_user, logout_user, login_required
 from app import app, bcrypt, db
-from app.forms import RegistrationForm, LoginForm, MechanicProfileForm, AdminCreateUserForm, AdminEditUserForm, UpdateAccountForm
+from app.forms import RegistrationForm, LoginForm, MechanicProfileForm, AdminCreateUserForm, AdminEditUserForm, UpdateAccountForm, EditCarForm 
 from app.models import User, Car, Role, RepairShopImage
 from flask_paginate import Pagination, get_page_args
 import os
@@ -323,29 +323,22 @@ def restore_car_visibility(car_id):
     return redirect(url_for('admin_cars'))
 
 
-@app.route('/admin_cars', methods=['GET'])
+@app.route('/admin_cars', methods=['GET', 'POST'])
 @login_required
 def admin_cars():
-    if not current_user.is_admin():
-        flash('Access denied. Admins only!', 'danger')
-        return redirect(url_for('home'))
+    form = EditCarForm()
+    form.mechanic_id.choices = [(mechanic.id, mechanic.username) for mechanic in User.query.filter(User.roles.any(Role.name == 'mechanic')).all()]
 
-    page, per_page, offset = get_page_args(page_parameter='page', per_page_parameter='per_page', per_page=10)
-    visibility_filter = request.args.get('visibility')
-
-    if visibility_filter == 'true':
-        cars_query = Car.query.filter_by(visibility=True)
-    elif visibility_filter == 'false':
-        cars_query = Car.query.filter_by(visibility=False)
+    visibility = request.args.get('visibility')
+    if visibility:
+        cars = Car.query.filter_by(visibility=(visibility == 'true')).all()
     else:
-        cars_query = Car.query
+        cars = Car.query.all()
 
-    total = cars_query.count()
-    cars = cars_query.offset(offset).limit(per_page).all()
-    
-    pagination = Pagination(page=page, per_page=per_page, total=total, css_framework='bootstrap4')
+    # Implement pagination if necessary
+    pagination = None  # Replace with actual pagination if used
 
-    return render_template('admin/admin_cars.html', cars=cars, pagination=pagination)
+    return render_template('admin/admin_cars.html', cars=cars, pagination=pagination, form=form)
 
 @app.route("/mechanic_profile/update", methods=['GET', 'POST'])
 @login_required
@@ -404,3 +397,30 @@ def delete_repair_shop_image_admin(image_id):
     db.session.commit()
     flash('Image has been deleted!', 'success')
     return redirect(url_for('edit_user', user_id=image.user_id))
+
+@app.route('/admin_update_car/<int:car_id>', methods=['GET', 'POST'])
+@login_required
+def admin_update_car(car_id):
+    car = Car.query.get_or_404(car_id)
+    form = EditCarForm()
+    form.mechanic_id.choices = [(mechanic.id, mechanic.username) for mechanic in User.query.filter(User.roles.any(Role.name == 'mechanic')).all()]
+    
+    if form.validate_on_submit():
+        car.registration_number = form.registration_number.data
+        car.vin_number = form.vin_number.data
+        car.additional_info = form.additional_info.data
+        car.owner.name = form.owner_name.data
+        car.owner.phone_number = form.owner_phone_number.data
+        car.mechanic_id = form.mechanic_id.data
+        db.session.commit()
+        flash('Car and owner details updated successfully!', 'success')
+        return redirect(url_for('admin_cars'))
+    elif request.method == 'GET':
+        form.registration_number.data = car.registration_number
+        form.vin_number.data = car.vin_number
+        form.additional_info.data = car.additional_info
+        form.owner_name.data = car.owner.name
+        form.owner_phone_number.data = car.owner.phone_number
+        form.mechanic_id.data = car.mechanic_id
+    
+    return render_template('admin/admin_cars.html', form=form, car=car)

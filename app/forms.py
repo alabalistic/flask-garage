@@ -213,3 +213,12 @@ class MechanicProfileForm(FlaskForm):
         user = User.query.filter_by(phone_number=phone_number.data).first()
         if user and user.id != current_user.id:
             raise ValidationError('Този номер е зает. опитайте с друг или Влезте в своя профил.')
+        
+class EditCarForm(FlaskForm):
+    registration_number = StringField('Регистрационен номер', validators=[DataRequired(), Length(min=2, max=10)])
+    vin_number = StringField('VIN номер', validators=[DataRequired(), Length(min=17, max=17)])
+    additional_info = TextAreaField('Информация за автомобила', validators=[DataRequired()])
+    owner_name = StringField('Име на собственика', validators=[DataRequired(), Length(min=2, max=100)])
+    owner_phone_number = StringField('Телефонен номер на собственика', validators=[DataRequired(), Length(min=10, max=30)])
+    mechanic_id = SelectField('Механик', coerce=int, validators=[DataRequired()])
+    submit = SubmitField('Запази промените')
