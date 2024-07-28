@@ -202,3 +202,9 @@ class MechanicProfileForm(FlaskForm):
     profile_picture = FileField('Качи профилна снимка', validators=[FileAllowed(['jpg', 'jpeg', 'png'])])
     repair_shop_pictures = FileField('Качи снимки на сервиза', validators=[FileAllowed(['jpg', 'jpeg', 'png'])], render_kw={"multiple": True})
     submit = SubmitField('Запази промените')
+
+    
+    
+
+class DeleteImageForm(FlaskForm):
+    submit = SubmitField('Delete')

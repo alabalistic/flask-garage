@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from datetime import datetime
 from flask_paginate import Pagination, get_page_args
 from app import app, db
-from app.forms import CreateCarForm, CreateVisitForm, UpdateCarForm
+from app.forms import CreateCarForm, CreateVisitForm, UpdateCarForm, DeleteImageForm
 from app.models import Car, CarOwner, CarVisit, User, RepairShopImage
 from google.cloud import speech
 import os
@@ -167,7 +167,9 @@ def mechanic_profile(mechanic_id):
         flash('This user is not a mechanic.', 'danger')
         return redirect(url_for('home'))
     repair_shop_images = RepairShopImage.query.filter_by(user_id=mechanic.id).all()
-    return render_template('public/mechanic_profile.html', mechanic=mechanic, repair_shop_images=repair_shop_images)
+    delete_form = DeleteImageForm()
+    return render_template('public/mechanic_profile.html', mechanic=mechanic, repair_shop_images=repair_shop_images, delete_form=delete_form)
+
 
 @app.route('/speech_to_text', methods=['POST'])
 @login_required

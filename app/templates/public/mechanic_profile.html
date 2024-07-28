@@ -2,7 +2,6 @@
 {% extends "layout.html" %}
 {% block content %}
 <div class="content-section">
-
     <!-- Mechanic Profile Section -->
     <div class="profile-header text-center mb-4">
         <img class="rounded-circle profile-img" src="{{ url_for('static', filename='profile_pics/' + mechanic.image_file) }}" alt="Mechanic profile picture">
@@ -23,9 +22,22 @@
         <p>{{ mechanic.expertise }}</p>
     </div>
 
-    <!-- Carousel Photo Gallery -->
+    <!-- Gallery Section -->
     <div class="gallery-section mb-4">
         <h4>Галерия</h4>
+        {% if current_user.is_authenticated and current_user.id == mechanic.id %}
+        <div class="image-grid">
+            {% for image in repair_shop_images %}
+            <div class="image-container">
+                <img src="{{ url_for('static', filename='repair_shop_pics/' + image.image_file) }}" class="grid-img" alt="Repair shop image">
+                <form action="{{ url_for('delete_repair_shop_image', image_id=image.id) }}" method="POST">
+                    {{ delete_form.hidden_tag() }}
+                    <button type="submit" class="btn btn-danger btn-sm btn-delete-image">Delete</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
         <div id="carouselExampleControls" class="carousel slide" data-ride="carousel">
             <div class="carousel-inner">
                 {% for image in repair_shop_images %}
@@ -43,6 +55,7 @@
                 <span class="sr-only">Next</span>
             </a>
         </div>
+        {% endif %}
     </div>
 
     <!-- Edit Profile Button (Visible only to the mechanic) -->

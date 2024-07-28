@@ -365,6 +365,11 @@ def delete_repair_shop_image(image_id):
         flash('You do not have permission to delete this image.', 'danger')
         return redirect(url_for('mechanic_profile', mechanic_id=current_user.id))
     
+    # Delete the image file from the filesystem
+    picture_path = os.path.join(current_app.root_path, 'static/repair_shop_pics', image.image_file)
+    if os.path.exists(picture_path):
+        os.remove(picture_path)
+
     db.session.delete(image)
     db.session.commit()
     flash('Image has been deleted!', 'success')
