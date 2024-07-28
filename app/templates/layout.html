@@ -17,9 +17,7 @@
     <header class="site-header">
         <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
             <div class="container">
-                <a class="navbar-brand mr-4" href="/">
-                    <img src="{{ url_for('static', filename='garage-logo.png') }}" alt="Гаража" style="height: 40px;">
-                </a>
+                <a class="navbar-brand mr-4" href="/">Начало</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -101,9 +99,11 @@
     <footer class="footer mt-auto py-3 bg-steel">
         <div class="container text-center">
             <span class="text-muted">
-                <a class="nav-item nav-link" href="{{ url_for('about') }}">За нас</a>
-                <a class="nav-item nav-link" href="{{ url_for('privacy') }}">Политика за поверителност</a> | 
-                <a class="nav-item nav-link" href="{{ url_for('terms') }}">Условия за ползване</a>
+                <a class="nav-item nav-link d-inline-block" href="{{ url_for('about') }}">За нас</a>
+                <span class="text-muted mx-1">|</span>
+                <a class="nav-item nav-link d-inline-block" href="{{ url_for('privacy') }}">Политика за поверителност</a>
+                <span class="text-muted mx-1">|</span>
+                <a class="nav-item nav-link d-inline-block" href="{{ url_for('terms') }}">Условия за ползване</a>
             </span>
         </div>
     </footer>
