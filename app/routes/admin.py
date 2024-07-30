@@ -1,7 +1,7 @@
 from flask import render_template, url_for, flash, redirect, request
 from flask_login import login_user, current_user, logout_user, login_required
 from app import app, bcrypt, db
-from app.forms import RegistrationForm, LoginForm, MechanicProfileForm, AdminCreateUserForm, AdminEditUserForm, UpdateAccountForm, EditCarForm 
+from app.forms import  LoginForm, MechanicProfileForm, AdminCreateUserForm, AdminEditUserForm, UpdateAccountForm, EditCarForm 
 from app.models import User, Car, Role, RepairShopImage
 from flask_paginate import Pagination, get_page_args
 import os
@@ -186,6 +186,7 @@ def generate_unique_username(base_username):
         new_username = f"{base_username}{count}"
         count += 1
     return new_username
+
 
 @app.route('/auth/callback')
 def auth_callback():

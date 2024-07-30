@@ -6,13 +6,11 @@ from flask_login import UserMixin, AnonymousUserMixin
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# models.py
-
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    phone_number = db.Column(db.String(30), unique=False, nullable=False, default='0000000000')
+    phone_number = db.Column(db.String(30), nullable=True, default='0000000000')  # Allowing duplicates
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
     biography = db.Column(db.Text, nullable=True)
     expertise = db.Column(db.String(200), nullable=True)
@@ -43,7 +41,6 @@ class User(db.Model, UserMixin):
             return True
         return False
 
-
 # Association table for user roles
 user_roles = db.Table('user_roles',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
@@ -54,10 +51,6 @@ class RepairShopImage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     image_file = db.Column(db.String(20), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-
-    def __repr__(self):
-        return f"RepairShopImage('{self.image_file}', '{self.user_id}')"
-
 
     def __repr__(self):
         return f"RepairShopImage('{self.image_file}', '{self.user_id}')"
@@ -102,7 +95,6 @@ class CarVisit(db.Model):
     description = db.Column(db.String(), nullable=True)
     car_id = db.Column(db.Integer, db.ForeignKey('car.id'), nullable=False)
 
-
     def __repr__(self):
         return f"CarVisit('{self.date}', '{self.description}')"
 
@@ -119,8 +111,6 @@ class Anonymous(AnonymousUserMixin):
 
 login_manager.anonymous_user = Anonymous
 
-
-
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
@@ -130,7 +120,6 @@ class Post(db.Model):
 
     def __repr__(self):
         return f"Post('{self.date_posted}')"
-
 
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
