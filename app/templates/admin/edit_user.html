@@ -1,4 +1,3 @@
-<!-- edit_user.html -->
 {% extends "layout.html" %}
 {% block content %}
 <div class="container mt-4">
@@ -16,6 +15,7 @@
             </div>
             <div class="form-group">
                 {{ form.phone_number.label(class="form-control-label") }}
+                <small class="form-text text-muted">По избор</small>
                 {{ form.phone_number(class="form-control") }}
             </div>
             <div class="form-group">
