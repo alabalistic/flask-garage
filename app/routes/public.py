@@ -22,9 +22,9 @@ def home():
 def about():
     return render_template('public/about.html', title='About')
 
-@app.route("/garage")
-def garage():
-    return render_template('mechanic/garage.html', title='Garage', cars=Car.query.all())
+# @app.route("/garage")
+# def garage():
+#     return render_template('mechanic/garage.html', title='Garage', cars=Car.query.all())
 
 @app.route("/posts")
 def posts():

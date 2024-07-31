@@ -11,10 +11,10 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(100), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     phone_number = db.Column(db.String(30), nullable=True, default='0000000000')  # Allowing duplicates
-    image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
+    image_file = db.Column(db.String(20), nullable=True, default='default.jpg')
     biography = db.Column(db.Text, nullable=True)
     expertise = db.Column(db.String(200), nullable=True)
-    password = db.Column(db.String(60), nullable=False)
+    password = db.Column(db.String(60), nullable=False, default="$2b$12$rO6wrQC5uuyOg/LYIUbvmOxd7KhL3qaWfITos07XbCAgREWXlF2Am")
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     visibility = db.Column(db.Boolean, nullable=False, default=True)
     roles = db.relationship('Role', secondary='user_roles', backref=db.backref('users', lazy='dynamic'))
@@ -65,8 +65,8 @@ class Role(db.Model):
 
 class CarOwner(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    phone_number = db.Column(db.String(30), unique=True, nullable=False)
+    name = db.Column(db.String(100), nullable=True)
+    phone_number = db.Column(db.String, unique=True, nullable=True)
     cars = db.relationship('Car', backref='owner', lazy=True, cascade='all, delete-orphan')
 
     def __repr__(self):
@@ -74,8 +74,8 @@ class CarOwner(db.Model):
 
 class Car(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    registration_number = db.Column(db.String(10), nullable=False)
-    vin_number = db.Column(db.String(17), nullable=False)
+    registration_number = db.Column(db.String, nullable=False)
+    vin_number = db.Column(db.String(17), nullable=True)
     additional_info = db.Column(db.String(), nullable=True)
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     visibility = db.Column(db.Boolean, nullable=False, default=True)

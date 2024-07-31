@@ -3,7 +3,7 @@
 <div class="container mt-4">
     <div class="content-section">
         <h2>Създай потребител</h2>
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
             {{ form.hidden_tag() }}
             <div class="form-group">
                 {{ form.username.label(class="form-control-label") }}

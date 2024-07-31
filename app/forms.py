@@ -5,7 +5,8 @@ from flask_wtf.file import FileAllowed
 from flask_login import current_user
 import re
 from app.models import User
-
+from werkzeug.utils import secure_filename
+from flask import request  # Import request
 
 def validate_phone_number_format(form, field):
     phone_number = field.data
@@ -43,36 +44,34 @@ def validate_registration_number(form, field):
     # Update the field data with the transformed number
     field.data = transformed_number.upper()
 
-class LoginForm(FlaskForm):
-    phone_number = StringField('Телефонен номер', validators=[DataRequired(), Length(min=10, max=30), validate_phone_number_format])
-    password = PasswordField('Парола', validators=[DataRequired()])
-    remember = BooleanField('Запомни ме')
-    submit = SubmitField('Вход')
+# class LoginForm(FlaskForm):
+#     phone_number = StringField('Телефонен номер', validators=[DataRequired(), Length(min=10, max=30), validate_phone_number_format])
+#     password = PasswordField('Парола', validators=[DataRequired()])
+#     remember = BooleanField('Запомни ме')
+#     submit = SubmitField('Вход')
 
 class CreateCarForm(FlaskForm):
     registration_number = StringField('Регистрационен номер', validators=[DataRequired(), validate_registration_number])
-    vin_number = StringField('VIN номер', validators=[DataRequired()])
+    vin_number = StringField('VIN номер')
     additional_info = TextAreaField('Информация за автомобила')
-    owner_name = StringField('Име на собственика', validators=[DataRequired()])
-    owner_phone_number = StringField('Телефонен номер на собственика', validators=[DataRequired()])
+    owner_name = StringField('Име на собственика')
+    owner_phone_number = StringField('Телефонен номер на собственика')
     submit = SubmitField('Запази колата')
 
 class UpdateCarForm(FlaskForm):
-    vin_number = StringField('VIN номер', validators=[DataRequired()])
-    additional_info = TextAreaField('Информация за автомобила', validators=[DataRequired()])
+    vin_number = StringField('VIN номер')
+    additional_info = TextAreaField('Информация за автомобила')
     submit = SubmitField('Запази промените')
 
 class CreateVisitForm(FlaskForm):
-    description = TextAreaField('Информация за ремонта', validators=[DataRequired()])
+    description = TextAreaField('Информация за ремонта')
     submit = SubmitField('Запази')
 
 class AdminCreateUserForm(FlaskForm):
     username = StringField('Име', validators=[DataRequired(), Length(min=2, max=20)])
     email = StringField('Email', validators=[DataRequired(), Email()])
-    phone_number = StringField('Телефонен номер', validators=[DataRequired(), Length(min=10, max=30)])
-    password = PasswordField('Парола', validators=[DataRequired()])
-    confirm_password = PasswordField('Подтвърди паролата', validators=[DataRequired(), EqualTo('password')])
-    role = SelectField('Роля', choices=[], coerce=int, validators=[DataRequired()])
+    phone_number = StringField('Телефонен номер', validators=[DataRequired()])
+    role = SelectField('Роля', coerce=int, validators=[DataRequired()])
     submit = SubmitField('Запази')
 
     def validate_username(self, username):
@@ -88,12 +87,12 @@ class AdminCreateUserForm(FlaskForm):
 class AdminEditUserForm(FlaskForm):
     username = StringField('Име', validators=[DataRequired(), Length(min=2, max=20)])
     email = StringField('Email', validators=[DataRequired(), Email()])
-    phone_number = StringField('Телефонен номер', validators=[DataRequired(), Length(min=10, max=30)])
+    phone_number = StringField('Телефонен номер')
     biography = TextAreaField('Биография', validators=[Optional(), Length(max=500)])
     expertise = StringField('Експертиза', validators=[Optional(), Length(max=200)])
     profile_picture = FileField('Качи профилна снимка', validators=[FileAllowed(['jpg', 'jpeg', 'png'])])
     role = SelectField('Роля', coerce=int, validators=[DataRequired()])
-    repair_shop_pictures = FileField('Качи снимки на сервиза', validators=[FileAllowed(['jpg', 'jpeg', 'png'])], render_kw={"multiple": True})
+    repair_shop_pictures = FileField('Качи снимки на сервиза', render_kw={"multiple": True}, validators=[FileAllowed(['jpg', 'jpeg', 'png'])])
     submit = SubmitField('Запази')
 
     def __init__(self, original_username=None, original_email=None, *args, **kwargs):
@@ -113,13 +112,32 @@ class AdminEditUserForm(FlaskForm):
             if user:
                 raise ValidationError('Email вече е регистриран, моля изберете друг')
 
+    def validate_profile_picture(self, profile_picture):
+        if profile_picture.data:
+            filename = secure_filename(profile_picture.data.filename)
+            if not self.allowed_file(filename):
+                raise ValidationError('Невалиден формат на профилната снимка. Разрешени формати: jpg, jpeg, png.')
+
+    def validate_repair_shop_pictures(self, repair_shop_pictures):
+        if repair_shop_pictures.data:
+            files = request.files.getlist(repair_shop_pictures.name)
+            for file in files:
+                filename = secure_filename(file.filename)
+                if not self.allowed_file(filename):
+                    raise ValidationError(f'Файлът {filename} не е в разрешения формат. Разрешени формати: jpg, jpeg, png.')
+
+    def allowed_file(self, filename):
+        ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png'}
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    
+
 class UpdateAccountForm(FlaskForm):
     username = StringField('Потребителско име', validators=[DataRequired(), Length(min=2, max=20)])
     email = StringField('Email', validators=[DataRequired(), Email()])
-    phone_number = StringField('Телефонен номер', validators=[DataRequired(), Length(min=10, max=30), validate_phone_number_format])
+    phone_number = StringField('Телефонен номер')
     picture = FileField('Избери профилна снимка', validators=[FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')])
-    biography = TextAreaField('Биография', validators=[Optional(), Length(max=500)])
-    expertise = StringField('Експертиза', validators=[Optional(), Length(max=200)])
+    biography = TextAreaField('Биография', validators=[Optional(), Length(max=800)])
+    expertise = StringField('Експертиза', validators=[Optional(), Length(max=500)])
     password = PasswordField('Нова парола', validators=[Optional(), Length(min=6, max=60), EqualTo('confirm', message='Passwords must match')])
     confirm = PasswordField('Повтори паролата')
     submit = SubmitField('Запази промените')
@@ -136,6 +154,18 @@ class UpdateAccountForm(FlaskForm):
             if user:
                 raise ValidationError('Email вече е регистриран, моля изберете друг')
 
+    def validate_picture(self, picture):
+        if picture.data:
+            filename = secure_filename(picture.data.filename)
+            if not self.allowed_file(filename):
+                raise ValidationError('Невалиден формат на профилната снимка. Разрешени формати: jpg, jpeg, png.')
+
+    def allowed_file(self, filename):
+        ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png'}
+        return '.' in filename and \
+               filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
 class PostForm(FlaskForm):
     content = TextAreaField('Content', validators=[DataRequired()])
     submit = SubmitField('Post')
@@ -150,18 +180,41 @@ class SearchForm(FlaskForm):
 
 class MechanicProfileForm(FlaskForm):
     username = StringField('Потребителско име', validators=[DataRequired(), Length(min=2, max=20)])
-    phone_number = StringField('Телефонен номер', validators=[DataRequired(), Length(min=10, max=30), validate_phone_number_format])
+    phone_number = StringField('Телефонен номер')
     biography = TextAreaField('Биография', validators=[Optional(), Length(max=500)])
     expertise = StringField('Експертиза', validators=[Optional(), Length(max=200)])
     profile_picture = FileField('Качи профилна снимка', validators=[FileAllowed(['jpg', 'jpeg', 'png'])])
-    repair_shop_pictures = FileField('Качи снимки на сервиза', validators=[FileAllowed(['jpg', 'jpeg', 'png'])], render_kw={"multiple": True})
+    repair_shop_pictures = FileField('Качи снимки на сервиза', render_kw={"multiple": True}, validators=[FileAllowed(['jpg', 'jpeg', 'png'])])
     submit = SubmitField('Запази промените')
+
+    def validate_profile_picture(self, profile_picture):
+        if profile_picture.data:
+            if isinstance(profile_picture.data, bytes):
+                raise ValidationError('Invalid profile picture upload')
+            filename = secure_filename(profile_picture.data.filename)
+            if not self.allowed_file(filename):
+                raise ValidationError('Невалиден формат на профилната снимка. Разрешени формати: jpg, jpeg, png.')
+
+    def validate_repair_shop_pictures(self, repair_shop_pictures):
+        if repair_shop_pictures.data:
+            files = repair_shop_pictures.data if isinstance(repair_shop_pictures.data, list) else [repair_shop_pictures.data]
+            for file in files:
+                if isinstance(file, bytes):
+                    raise ValidationError('Invalid file upload')
+                filename = secure_filename(file.filename)
+                if not self.allowed_file(filename):
+                    raise ValidationError(f'Файлът {filename} не е в разрешения формат. Разрешени формати: jpg, jpeg, png.')
+
+    def allowed_file(self, filename):
+        ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png'}
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 class EditCarForm(FlaskForm):
     registration_number = StringField('Регистрационен номер', validators=[DataRequired(), Length(min=2, max=10)])
-    vin_number = StringField('VIN номер', validators=[DataRequired(), Length(min=17, max=17)])
-    additional_info = TextAreaField('Информация за автомобила', validators=[DataRequired()])
-    owner_name = StringField('Име на собственика', validators=[DataRequired(), Length(min=2, max=100)])
-    owner_phone_number = StringField('Телефонен номер на собственика', validators=[DataRequired(), Length(min=10, max=30)])
-    mechanic_id = SelectField('Механик', coerce=int, validators=[DataRequired()])
+    vin_number = StringField('VIN номер')
+    additional_info = TextAreaField('Информация за автомобила')
+    owner_name = StringField('Име на собственика')
+    owner_phone_number = StringField('Телефонен номер на собственика')
+    mechanic_id = SelectField('Механик', coerce=int)
     submit = SubmitField('Запази промените')

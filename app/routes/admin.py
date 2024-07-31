@@ -1,7 +1,7 @@
 from flask import render_template, url_for, flash, redirect, request
 from flask_login import login_user, current_user, logout_user, login_required
 from app import app, bcrypt, db
-from app.forms import  LoginForm, MechanicProfileForm, AdminCreateUserForm, AdminEditUserForm, UpdateAccountForm, EditCarForm 
+from app.forms import   MechanicProfileForm, AdminCreateUserForm, AdminEditUserForm, UpdateAccountForm, EditCarForm 
 from app.models import User, Car, Role, RepairShopImage
 from flask_paginate import Pagination, get_page_args
 import os
@@ -45,25 +45,39 @@ def create_user():
     form.role.choices = [(role.id, role.name) for role in Role.query.all()]
 
     if form.validate_on_submit():
-        user = User.query.filter_by(phone_number=form.phone_number.data).first()
-        if user:
-            flash(f'Потребител с телефонен номер:  {form.phone_number.data} е вече регистриран.', 'danger')
-            return redirect(url_for('create_user'))
+        app.logger.info('Form validated successfully')
+        try:
+            # Check if the phone number is already registered
+            user = User.query.filter_by(phone_number=form.phone_number.data).first()
+            if user:
+                flash(f'Потребител с телефонен номер: {form.phone_number.data} е вече регистриран.', 'danger')
+                return redirect(url_for('create_user'))
 
-        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        user = User(username=form.username.data, email=form.email.data, phone_number=form.phone_number.data, password=hashed_password)
-        db.session.add(user)
-        db.session.flush()
-        
-        role = Role.query.get(form.role.data)
-        if role:
-            user.roles.append(role)
-        
-        db.session.commit()
-        flash(f'User {form.username.data} регистриран успешно!', 'success')
-        app.logger.info(f'{current_user.username}  created user {user.phone_number}')
-        return redirect(url_for('admin_users'))
-        
+            # Hash the password
+            hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+
+            # Create a new user
+            user = User(username=form.username.data, email=form.email.data, phone_number=form.phone_number.data, password=hashed_password)
+            db.session.add(user)
+            db.session.flush()
+
+            # Assign role to the new user
+            role = Role.query.get(form.role.data)
+            if role:
+                user.roles.append(role)
+            
+            db.session.commit()
+            flash(f'User {form.username.data} регистриран успешно!', 'success')
+            app.logger.info(f'{current_user.username} created user {user.phone_number}')
+            return redirect(url_for('admin_users'))
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f'Error creating user: {str(e)}')
+            flash('Възникна грешка при създаването на потребителя. Моля, опитайте отново.', 'danger')
+    
+    if form.errors:
+        app.logger.info(f'Form errors: {form.errors}')
+    
     return render_template('admin/create_user.html', form=form)
 
 @app.route("/search_users", methods=['GET'])
