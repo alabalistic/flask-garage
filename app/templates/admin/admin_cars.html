@@ -55,7 +55,7 @@
                                 </button>
                             </div>
                             <div class="modal-body">
-                                <form method="POST" action="{{ url_for('update_car', car_id=car.id) }}">
+                                <form method="POST" action="{{ url_for('admin_update_car', car_id=car.id) }}">
                                     {{ form.hidden_tag() }}
                                     <div class="form-group">
                                         {{ form.registration_number.label(class="form-control-label") }}
