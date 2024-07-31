@@ -4,6 +4,8 @@ from wtforms.validators import DataRequired, Length, EqualTo, ValidationError, O
 from flask_wtf.file import FileAllowed
 from flask_login import current_user
 import re
+from app.models import User
+
 
 def validate_phone_number_format(form, field):
     phone_number = field.data
