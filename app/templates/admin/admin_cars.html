@@ -18,6 +18,7 @@
             <thead>
                 <tr>
                     <th>Регистрационен номер</th>
+                    <th> Информация за автомобила</th>
                     <th>Собственик</th>
                     <th>Телефон на Собственика</th>
                     <th>Механик</th>
@@ -29,6 +30,7 @@
                 {% for car in cars %}
                 <tr>
                     <td>{{ car.registration_number }}</td>
+                    <td>{{ car.additional_info if car.additional_info else "N/A" }} </td>
                     <td>{{ car.owner.name if car.owner else 'Orphaned' }}</td>
                     <td>{{ car.owner.phone_number if car.owner else 'N/A' }}</td>
                     <td>{{ car.mechanic.username if car.mechanic else 'N/A' }}</td>
