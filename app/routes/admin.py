@@ -136,14 +136,28 @@ def edit_user(user_id):
 @login_required
 def delete_user(user_id):
     if not current_user.is_admin():
-        flash('Достъп отказан!', 'danger')
+        flash('Access denied!', 'danger')
         return redirect(url_for('home'))
-    
+
     user = User.query.get_or_404(user_id)
+
+    if user.is_mechanic():
+        # Get another mechanic to reassign the cars
+        new_mechanic = User.query.filter(User.roles.any(Role.name == 'mechanic'), User.id != user_id).first()
+        if not new_mechanic:
+            flash('No other mechanic found to reassign cars. Please create another mechanic first.', 'danger')
+            return redirect(url_for('admin_users'))
+
+        # Reassign all cars to the new mechanic
+        cars = Car.query.filter_by(mechanic_id=user.id).all()
+        for car in cars:
+            car.mechanic_id = new_mechanic.id
+        db.session.commit()
+        flash(f'All cars have been reassigned to mechanic {new_mechanic.username}.', 'info')
+
     db.session.delete(user)
     db.session.commit()
-    flash(f'User {user.username} е изтрит успешно!', 'success')
-    app.logger.info(f'{current_user.username}  deleted user {user.phone_number}')
+    flash(f'User {user.username} has been successfully deleted!', 'success')
     return redirect(url_for('admin_users'))
 
 from app import oauth, google
